@@ -1,0 +1,87 @@
+---
+title: "Wallets & Security"
+description: "How OceanX wallets, MPC infrastructure, passkeys and security features work."
+---
+
+# Wallets & Security
+
+OceanX is designed around self-custody.
+
+Your OceanX wallets are non-custodial, meaning OceanX cannot access, freeze or transfer your assets.
+
+## Wallet structure
+
+When you create an account, OceanX initially creates:
+
+- One Solana wallet
+- One EVM-compatible wallet
+
+The EVM wallet can be used with major EVM-compatible chains supported by OceanX.
+
+## MPC wallet infrastructure
+
+OceanX uses an MPC wallet structure through embedded wallet infrastructure.
+
+MPC, or Multi-Party Computation, avoids relying on a single exposed private key. Instead, signing is handled through secure key shares.
+
+Benefits include:
+
+- Reduced single point of failure
+- Improved recovery options
+- Smooth embedded wallet experience
+- Secure on-device signing
+- No repeated wallet popups for every action
+
+## Privy-powered embedded wallets
+
+OceanX uses Privy-powered embedded wallets.
+
+This allows users to:
+
+- Sign in with email
+- Use passkeys
+- Access wallets without browser extensions
+- Maintain control over their wallet
+- Export private keys where supported
+
+## Passkeys
+
+Passkeys are recommended for account security.
+
+They provide a modern login experience using secure device-based authentication such as Face ID, Touch ID, Windows Hello or hardware-backed credentials.
+
+## Multi-factor authentication
+
+Users should enable additional security wherever available.
+
+Recommended settings include:
+
+- Passkeys
+- MFA
+- Recovery methods
+- Secure email access
+- Trusted devices
+
+## Wallet control
+
+OceanX does not custody user assets.
+
+Users remain in control of their wallets. OceanX cannot withdraw funds on a user's behalf.
+
+<Warning>
+Never share passwords, private keys, recovery credentials or device access with anyone claiming to represent OceanX.
+</Warning>
+
+## FAQ
+
+### Can OceanX move my funds?
+
+No. OceanX wallets are non-custodial.
+
+### Do I need a seed phrase?
+
+OceanX is designed to avoid the traditional seed phrase onboarding experience. Wallet export and recovery options may be available where supported.
+
+### Should I use passkeys?
+
+Yes. Passkeys are strongly recommended.
