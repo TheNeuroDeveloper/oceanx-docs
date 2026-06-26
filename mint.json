@@ -7,10 +7,10 @@
     "light": "#EAF8FF",
     "dark": "#06111F"
   },
-  "favicon": "/favicon.png",
+  "favicon": "public/favicon.png",
   "logo": {
-    "light": "/logo.png",
-    "dark": "/logo.png",
+    "light": "public/logo.png",
+    "dark": "public/logo.png",
     "href": "https://oceanx.trade"
   },
   "navigation": [
