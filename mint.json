@@ -9,8 +9,8 @@
   },
   "favicon": "/favicon.png",
   "logo": {
-    "light": "/logo-wide.png",
-    "dark": "/logo-wide.png",
+    "light": "/logo.png",
+    "dark": "/logo.png",
     "href": "https://oceanx.trade"
   },
   "navigation": [
