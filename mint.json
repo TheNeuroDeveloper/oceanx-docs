@@ -7,7 +7,12 @@
     "light": "#EAF8FF",
     "dark": "#06111F"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
+  "logo": {
+    "light": "/logo-wide.png",
+    "dark": "/logo-wide.png",
+    "href": "https://oceanx.trade"
+  },
   "navigation": [
     {
       "group": "Start Here",
@@ -62,7 +67,7 @@
     {
       "group": "Rewards",
       "pages": [
-        "rewards/xp",
+        "rewards/points",
         "rewards/quests",
         "rewards/competitions",
         "rewards/seasons",
@@ -72,6 +77,7 @@
     {
       "group": "Reference",
       "pages": [
+        "misc/glossary",
         "misc/security",
         "misc/token",
         "misc/faq",

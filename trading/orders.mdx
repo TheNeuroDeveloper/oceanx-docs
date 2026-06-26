@@ -16,23 +16,25 @@ Orders are:
 - Placed directly through the OceanX UI
 - Automatically signed using embedded wallet infrastructure
 - Simulated
-- Smart-routed
+- Smart routed
 - Submitted for execution
 
 ## Limit orders
 
-Limit orders are planned.
+Limit orders are not yet available for spot meme coin trading on OceanX.
 
-They will be placed directly through the OceanX interface and automatically signed by the user's wallet infrastructure where supported.
+Perpetuals support both market and limit orders through the Hyperliquid integration. See [Perpetuals](/markets/perpetuals) for details.
+
+Spot limit orders will be placed directly through the OceanX interface and automatically signed by the user's wallet infrastructure when they become available.
 
 ## Planned order types
 
-OceanX plans to support additional order types, including:
+OceanX plans to support additional spot order types, including:
 
 - Stop Loss
 - Take Profit
 - Trailing Stop
-- DCA
+- DCA (Dollar Cost Averaging)
 
 DCA details are still to be confirmed.
 
@@ -40,7 +42,11 @@ DCA details are still to be confirmed.
 
 ### Do I need to manually sign every order?
 
-No. OceanX is designed around embedded wallet signing and one-click execution.
+Not for routine trades. When session authorization is active, orders within your defined limits sign automatically on device. See [Wallets & Security](/getting-started/wallets-security).
+
+### Are limit orders available for spot trading?
+
+Not yet. Limit orders are available for perpetuals through Hyperliquid. Spot limit orders are planned.
 
 ### Is DCA live?
 

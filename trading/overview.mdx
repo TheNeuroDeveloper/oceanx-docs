@@ -5,22 +5,22 @@ description: "How OceanX trading, execution and routing work."
 
 # Trading Overview
 
-OceanX is designed for fast, low-friction trading.
+OceanX is designed for fast, low friction trading.
 
-The platform combines embedded wallets, on-device signing, smart routing and optimized transaction execution.
+The platform combines embedded wallets, on device signing, smart routing and optimized transaction execution.
 
-## One-click execution
+## One click execution
 
-OceanX supports one-click execution.
+OceanX supports one click execution through session based signing.
 
-There are no repeated wallet popups or manual confirmations for every trade.
-
-Your embedded wallet signs on-device, then each order is:
+When session authorization is active, routine trades within your defined limits do not require a separate wallet popup or manual confirmation for every order. Your embedded wallet signs on device, then each order is:
 
 - Simulated
-- Smart-routed
+- Smart routed
 - Optimized
 - Submitted for execution
+
+You authorize signing up front within limits you control. OceanX does not sign outside those parameters. See [Wallets & Security](/getting-started/wallets-security) for details on session keys.
 
 OceanX targets execution within one block where possible.
 
@@ -28,11 +28,11 @@ OceanX targets execution within one block where possible.
 
 OceanX uses its own routing and execution infrastructure.
 
-The engine is designed to improve transaction reliability, reduce friction and optimize execution paths during fast-moving market conditions.
+The engine is designed to improve transaction reliability, reduce friction and optimize execution paths during fast moving market conditions.
 
 ## MEV protection
 
-OceanX uses execution optimizations designed to reduce exposure to adverse MEV conditions, including front-running and poor execution outcomes.
+OceanX uses execution optimizations designed to reduce exposure to adverse MEV (Maximal Extractable Value) conditions, including front running and poor execution outcomes.
 
 ## Newly migrated assets
 
@@ -46,11 +46,11 @@ OceanX supports a growing selection of digital assets.
 
 ### Do I need to approve every trade?
 
-No. OceanX uses embedded wallet signing for one-click execution.
+Not for routine trades within your session limits. OceanX uses embedded wallet signing with session authorization for one click execution. You can revoke session authorization at any time.
 
 ### Are there trading limits?
 
-OceanX currently does not impose platform-level trading limits. Third-party providers or external venues may apply their own limits.
+OceanX currently does not impose platform level trading limits. Third party providers or external venues may apply their own limits.
 
 ### Are fees displayed before trading?
 

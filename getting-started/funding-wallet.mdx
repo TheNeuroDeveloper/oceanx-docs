@@ -7,7 +7,7 @@ description: "Deposit and withdraw assets using your OceanX wallets."
 
 Before trading, you need to fund your OceanX wallet.
 
-OceanX initially provisions one Solana wallet and one EVM-compatible wallet for each user.
+OceanX initially provisions one Solana wallet and one EVM compatible wallet for each user.
 
 ## Deposit assets
 
@@ -18,7 +18,7 @@ To fund your wallet:
     Navigate to the wallet, portfolio or funding area inside OceanX.
   </Step>
   <Step title="Choose a network">
-    Select Solana or a supported EVM-compatible network.
+    Select Solana or a supported EVM compatible network.
   </Step>
   <Step title="Copy your address">
     Copy the deposit address shown in OceanX.
@@ -30,7 +30,7 @@ To fund your wallet:
 
 ## Supported networks
 
-OceanX currently supports Solana and major EVM-compatible chains.
+OceanX currently supports Solana and major EVM compatible chains.
 
 This may include:
 
@@ -46,13 +46,26 @@ Supported networks may change as OceanX expands.
 
 ## Withdrawals
 
-Users can withdraw assets from their OceanX wallets to external wallets.
+Users can withdraw assets from their OceanX wallets to external addresses.
 
-OceanX does not custody funds. Transactions are signed by the user's wallet.
+OceanX does not charge withdrawal fees.
 
-## Fiat on-ramp
+Standard network gas fees still apply and are paid from your wallet balance on each chain.
 
-Fiat on-ramp support is planned.
+## Gas for embedded wallets
+
+Your embedded wallet holds the native tokens needed to pay network gas:
+
+- **Solana:** SOL pays transaction fees
+- **EVM chains:** ETH or the chain's native token (e.g. MATIC on Polygon) pays transaction fees
+
+When you deposit funds, include enough of the native token to cover expected trading, transfer and withdrawal fees. OceanX does not subsidize gas.
+
+Transactions are signed by your wallet. OceanX does not custody funds.
+
+## Fiat onramp
+
+Fiat onramp support is planned.
 
 Availability, payment methods and jurisdiction support will depend on integrated providers.
 
@@ -66,6 +79,14 @@ Yes, provided the exchange supports the asset and network you are depositing to.
 
 OceanX generally does not charge a platform fee for deposits. Network fees may apply.
 
+### Does OceanX charge withdrawal fees?
+
+No. OceanX does not charge withdrawal fees. You still pay standard network gas fees from your wallet balance.
+
 ### Does OceanX support fiat purchases?
 
-Fiat on-ramp functionality is planned.
+Fiat onramp functionality is planned.
+
+### Where does gas come from for embedded wallets?
+
+From your wallet balance on each chain. Deposit the chain's native token (SOL, ETH, etc.) alongside your trading assets to cover transaction fees.

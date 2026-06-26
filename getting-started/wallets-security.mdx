@@ -5,36 +5,48 @@ description: "How OceanX wallets, MPC infrastructure, passkeys and security feat
 
 # Wallets & Security
 
-OceanX is designed around self-custody.
+OceanX is designed around self custody.
 
-Your OceanX wallets are non-custodial, meaning OceanX cannot access, freeze or transfer your assets.
+Your OceanX wallets are noncustodial, meaning OceanX cannot access, freeze or transfer your assets.
 
 ## Wallet structure
 
 When you create an account, OceanX initially creates:
 
 - One Solana wallet
-- One EVM-compatible wallet
+- One EVM compatible wallet
 
-The EVM wallet can be used with major EVM-compatible chains supported by OceanX.
+The EVM wallet can be used with major EVM compatible chains supported by OceanX.
 
 ## MPC wallet infrastructure
 
-OceanX uses an MPC wallet structure through embedded wallet infrastructure.
+OceanX uses an MPC (Multi Party Computation) wallet structure through embedded wallet infrastructure.
 
-MPC, or Multi-Party Computation, avoids relying on a single exposed private key. Instead, signing is handled through secure key shares.
+MPC avoids relying on a single exposed private key. Instead, signing is handled through secure key shares.
 
 Benefits include:
 
 - Reduced single point of failure
 - Improved recovery options
 - Smooth embedded wallet experience
-- Secure on-device signing
-- No repeated wallet popups for every action
+- Secure on device signing
+- No repeated wallet popups for routine trades within your authorized limits
 
-## Privy-powered embedded wallets
+## Session keys and delegated signing
 
-OceanX uses Privy-powered embedded wallets.
+OceanX is self custody, but it also supports fast one click trading. These two ideas work together through session keys (also called delegated signing).
+
+When you enable one click trading, you authorize your embedded wallet to sign transactions automatically within limits you define. Examples include maximum trade size, allowed tokens or a time window.
+
+You authorize trading up front. OceanX does not sign transactions outside the parameters you set. You can revoke session authorization at any time from your account settings.
+
+This is different from manually approving every transaction in a browser extension wallet. You maintain custody of your assets, but routine trades within your preset limits do not require a separate confirmation popup for each order.
+
+Every session authorization is explicit. OceanX never signs on your behalf without your permission.
+
+## Privy powered embedded wallets
+
+OceanX uses Privy powered embedded wallets.
 
 This allows users to:
 
@@ -48,9 +60,9 @@ This allows users to:
 
 Passkeys are recommended for account security.
 
-They provide a modern login experience using secure device-based authentication such as Face ID, Touch ID, Windows Hello or hardware-backed credentials.
+They provide a modern login experience using secure device based authentication such as Face ID, Touch ID, Windows Hello or hardware backed credentials.
 
-## Multi-factor authentication
+## Multi factor authentication
 
 Users should enable additional security wherever available.
 
@@ -76,7 +88,7 @@ Never share passwords, private keys, recovery credentials or device access with 
 
 ### Can OceanX move my funds?
 
-No. OceanX wallets are non-custodial.
+No. OceanX wallets are noncustodial.
 
 ### Do I need a seed phrase?
 
@@ -85,3 +97,7 @@ OceanX is designed to avoid the traditional seed phrase onboarding experience. W
 ### Should I use passkeys?
 
 Yes. Passkeys are strongly recommended.
+
+### Do I need to approve every trade manually?
+
+Not for routine trades. When session authorization is active, trades within your defined limits sign automatically on device. You can disable session authorization at any time to require manual approval again.
