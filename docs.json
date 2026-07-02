@@ -96,10 +96,10 @@
         "group": "Developer API",
         "icon": "code",
         "pages": [
-          "api/overview.mdx",
-          "api/authentication.mdx",
-          "api/rate-limits.mdx",
-          "api/errors.mdx",
+          "api/overview",
+          "api/authentication",
+          "api/rate-limits",
+          "api/errors",
           {
             "group": "Endpoints",
             "icon": "plug",
@@ -111,9 +111,9 @@
               "api/endpoints/realtime-session.mdx"
             ]
           },
-          "api/realtime.mdx",
-          "api/data-reference.mdx",
-          "api/changelog.mdx"
+          "api/realtime",
+          "api/data-reference",
+          "api/changelog"
         ]
       },
       {
