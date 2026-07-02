@@ -117,6 +117,13 @@
         ]
       },
       {
+        "group": "Integrations",
+        "icon": "telegram",
+        "pages": [
+          "integrations/telegram-bot"
+        ]
+      },
+      {
         "group": "Reference",
         "pages": [
           "misc/glossary",

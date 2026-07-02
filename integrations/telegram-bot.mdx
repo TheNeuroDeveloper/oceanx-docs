@@ -1,0 +1,65 @@
+---
+title: "Telegram Bot"
+sidebarTitle: "Telegram Bot"
+description: "Track any Solana wallet and receive real-time trade alerts in Telegram, tied to your OceanX account."
+icon: "telegram"
+---
+
+Track any Solana wallet and get real-time trade alerts — straight from Telegram, tied to your OceanX account.
+
+<Note>
+  The Telegram bot is **free** while in beta.
+</Note>
+
+## Connect Telegram to OceanX
+
+Before the bot can track anything for you, link your Telegram to your OceanX account. You only need to do this once.
+
+<Steps>
+  <Step title="Sign in to OceanX">
+    Sign in at [oceanx.trade](https://www.oceanx.trade).
+  </Step>
+  <Step title="Open Connected accounts">
+    Go to **Settings → Profile → Connected accounts**.
+  </Step>
+  <Step title="Link Telegram">
+    Next to **Telegram**, click **Log in with Telegram** and approve the popup.
+  </Step>
+</Steps>
+
+There's no API key to copy anywhere. Your Telegram is now linked and the bot can act on your behalf.
+
+## Commands
+
+Open [@OceanXTradeBot](https://t.me/OceanXTradeBot) in Telegram:
+
+| Command | What it does |
+| --- | --- |
+| `/track <wallet>` | Start tracking a Solana wallet. |
+| `/wallets` | List every wallet you're tracking. |
+| `/untrack <wallet>` | Stop tracking a wallet. |
+| `/trades` | Show recent trades across your tracked wallets. |
+| _(automatic)_ | Live alerts — the bot messages you the moment a tracked wallet trades. |
+
+## Same data as the OceanX app
+
+Your tracked wallets are shared with the in-app [Tracker](/trading/intel):
+
+- Add a wallet in the bot → it appears in the web app.
+- Add a wallet in the app → it appears with `/wallets` in Telegram.
+- Alerts and trade history come from the same live feed.
+
+<Note>
+  Tracking begins the moment you add a wallet — there's no historical backfill, so a freshly tracked wallet stays quiet until it next trades.
+</Note>
+
+## Disconnect
+
+To stop everything, go to **Settings → Profile → Connected accounts** and disconnect Telegram. The bot immediately loses access and alerts stop.
+
+Disconnecting does not delete your OceanX account.
+
+## Troubleshooting
+
+- **"Connect your account" reply** — you haven't linked yet (or you disconnected). Re-link at **Settings → Profile → Connected accounts**.
+- **Nothing after `/track`** — tracking is live-only; the wallet simply hasn't traded since you added it.
