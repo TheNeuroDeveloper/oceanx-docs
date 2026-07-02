@@ -1,0 +1,111 @@
+---
+title: "Tracked wallets"
+sidebarTitle: "Wallets"
+description: "List, add and remove Solana wallets from your OceanX tracker."
+icon: "wallet"
+---
+
+Endpoints for managing the wallets in your OceanX tracker.
+
+## List tracked wallets
+
+<Info>
+  **`GET /api/v1/tracker/wallets`**
+</Info>
+
+List the wallets you're tracking. Optional `?group=<groupId>` to scope to a tracker group.
+
+### Request
+
+```bash
+curl https://www.oceanx.trade/api/v1/tracker/wallets \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "wallets": [
+    {
+      "wallet": "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+      "label": "Whale #1",
+      "emoji": "🐳",
+      "notes": null,
+      "groups": ["default:usr_123"],
+      "status": "live",
+      "lastEventAtMs": 1751385600000
+    }
+  ]
+}
+```
+
+`status` is `"pending"` until the first observed activity, then `"live"`.
+
+---
+
+## Add a wallet
+
+<Info>
+  **`POST /api/v1/tracker/wallets`**
+</Info>
+
+Start tracking a wallet.
+
+### Body
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `wallet` | string | yes | Solana address (base58, 32–44 chars). |
+| `label` | string | no | Display label. |
+| `emoji` | string | no | Display emoji. |
+| `group` | string | no | Group id to add it to (defaults to your Main group). |
+
+### Request
+
+```bash
+curl -X POST https://www.oceanx.trade/api/v1/tracker/wallets \
+  -H "Authorization: Bearer $OCEANX_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"wallet":"5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1","label":"Whale #1","emoji":"🐳"}'
+```
+
+### Response
+
+```json
+{
+  "wallet": "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+  "tracked": true,
+  "groupId": "default:usr_123"
+}
+```
+
+<Note>
+  Tracking begins from the moment you add a wallet — v1 does **not** backfill historical activity for a newly added wallet.
+</Note>
+
+---
+
+## Remove a wallet
+
+<Info>
+  **`DELETE /api/v1/tracker/wallets/{wallet}`**
+</Info>
+
+Stop tracking a wallet (hides it from your view).
+
+### Request
+
+```bash
+curl -X DELETE https://www.oceanx.trade/api/v1/tracker/wallets/5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1 \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "wallet": "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+  "tracked": false
+}
+```

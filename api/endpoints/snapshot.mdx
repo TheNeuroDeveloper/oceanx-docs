@@ -1,0 +1,47 @@
+---
+title: "Tracker snapshot"
+sidebarTitle: "Snapshot"
+description: "Get the full tracker state: your groups, wallets and status."
+icon: "camera"
+---
+
+<Info>
+  **`GET /api/v1/tracker/snapshot`**
+</Info>
+
+Returns the full tracker state — your groups, wallets and status — in a single call.
+
+## Query parameters
+
+| Query | Default | Notes |
+| --- | --- | --- |
+| `group` | — | Scope the snapshot to a tracker group. |
+
+## Request
+
+```bash
+curl https://www.oceanx.trade/api/v1/tracker/snapshot \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+```json
+{
+  "groups": [
+    { "id": "default:usr_123", "name": "Main", "emoji": "👻", "sortOrder": 0, "walletCount": 3 }
+  ],
+  "wallets": [
+    {
+      "wallet": "5Q54…e4j1",
+      "label": "Whale #1",
+      "emoji": "🐳",
+      "notes": null,
+      "groups": ["default:usr_123"],
+      "status": "live",
+      "lastEventAtMs": 1751385600000
+    }
+  ],
+  "status": { "globalWalletCount": 3 }
+}
+```

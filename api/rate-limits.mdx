@@ -1,0 +1,39 @@
+---
+title: "Rate Limits"
+sidebarTitle: "Rate Limits"
+description: "OceanX Developer API rate limits and rate-limit response headers."
+icon: "gauge"
+---
+
+Rate limits are applied **per API key** using a sliding window.
+
+| Limit | Value |
+| --- | --- |
+| Requests | **120 / minute** |
+
+## Response headers
+
+Every response includes the current rate-limit state:
+
+```http
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 118
+X-RateLimit-Reset: 1751385600      # unix seconds when the window resets
+```
+
+## Handling 429s
+
+When a request exceeds the limit, the API returns `429 Too Many Requests` with a `Retry-After` header:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 12
+```
+
+```json
+{ "error": { "code": "rate_limited", "message": "Rate limit exceeded." } }
+```
+
+<Tip>
+  Back off for at least the number of seconds in `Retry-After` before retrying. For sustained polling, watch `X-RateLimit-Remaining` and pace requests to stay within the window.
+</Tip>

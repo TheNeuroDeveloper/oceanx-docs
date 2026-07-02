@@ -1,0 +1,62 @@
+---
+title: "Recent trades"
+sidebarTitle: "Trades"
+description: "Pull recent normalized trades across your tracked wallets."
+icon: "chart-line"
+---
+
+<Info>
+  **`GET /api/v1/tracker/trades`**
+</Info>
+
+Recent trades across your tracked wallets, newest first, normalized to a stable shape.
+
+## Query parameters
+
+| Query | Default | Notes |
+| --- | --- | --- |
+| `wallet` | — | Filter to one wallet address. |
+| `limit` | `100` | 1–500. |
+| `group` | — | Scope to a tracker group. |
+
+## Request
+
+```bash
+curl "https://www.oceanx.trade/api/v1/tracker/trades?limit=50" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+```json
+{
+  "count": 1,
+  "trades": [
+    {
+      "type": "trade",
+      "wallet": "5Q54…e4j1",
+      "mint": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+      "side": "buy",
+      "price_usd": 0.0421,
+      "volume_usd": 1234.56,
+      "volume_sol": 8.13,
+      "ts": 1751385600000,
+      "signature": "3xY…",
+      "pool": "…",
+      "dex": "pumpswap",
+      "market_cap_usd": 421000,
+      "symbol": "WIF",
+      "name": "dogwifhat",
+      "image": "https://…",
+      "imageProxyUrl": "https://…",
+      "imageStatus": "resolved"
+    }
+  ]
+}
+```
+
+<Note>
+  Recent trades are served from a rolling cache (~250 most recent events per wallet). For continuous coverage, use the [realtime feed](/api/realtime).
+</Note>
+
+See [Data Reference](/api/data-reference) for the full trade field list.

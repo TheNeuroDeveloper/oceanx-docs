@@ -1,0 +1,53 @@
+---
+title: "Realtime session"
+sidebarTitle: "Realtime session"
+description: "Mint a short-lived WebSocket session for live updates on your tracked wallets."
+icon: "satellite-dish"
+---
+
+<Info>
+  **`GET /api/v1/tracker/realtime/session`**
+</Info>
+
+Mint a short-lived WebSocket session for live updates on your tracked wallets.
+
+## Query parameters
+
+| Query | Default | Notes |
+| --- | --- | --- |
+| `group` | — | Scope the session to a tracker group. |
+
+## Request
+
+```bash
+curl "https://www.oceanx.trade/api/v1/tracker/realtime/session" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+```json
+{
+  "wsUrl": "wss://stream.oceanx.trade/wallet/track/ws?ticket=…&wallets=5Q54…e4j1,9aB…",
+  "wallets": ["5Q54…e4j1", "9aB…"],
+  "expiresInSeconds": 60
+}
+```
+
+If you have no tracked wallets yet:
+
+```json
+{
+  "wsUrl": "",
+  "wallets": [],
+  "expiresInSeconds": 0,
+  "message": "No tracked wallets in this view yet. Track a wallet first, then open a session."
+}
+```
+
+<Warning>
+  - The `wsUrl` (and its ticket) is valid for **~60 seconds** — open it promptly.
+  - **Re-fetch a session before each (re)connect.** Tickets are single-use-window and expire; don't cache the URL.
+</Warning>
+
+See the [Realtime Feed](/api/realtime) guide for frame formats and a full Node.js example.

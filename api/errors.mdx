@@ -1,0 +1,33 @@
+---
+title: "Errors"
+sidebarTitle: "Errors"
+description: "OceanX Developer API error envelope and error codes."
+icon: "triangle-exclamation"
+---
+
+Errors use a consistent envelope:
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "This API key is invalid or has been revoked."
+  }
+}
+```
+
+## Error codes
+
+| Status | `code` | Meaning |
+| --- | --- | --- |
+| `400` | `invalid_wallet` | The wallet address is not a valid Solana address. |
+| `401` | `missing_api_key` | No `Authorization: Bearer` header. |
+| `401` | `invalid_api_key` | Unknown or revoked key. |
+| `429` | `rate_limited` | Rate limit exceeded — see `Retry-After`. |
+| `502` | `track_failed` / `untrack_failed` | Upstream rejected the change. |
+| `503` | `upstream_unavailable` | Tracker service temporarily unavailable. |
+| `503` | `ticket_key_not_configured` | Realtime not enabled on this deployment. |
+
+<Tip>
+  Always branch on `error.code`, not `error.message`. Messages may change; codes are stable.
+</Tip>

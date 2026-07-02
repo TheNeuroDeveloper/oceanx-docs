@@ -1,0 +1,44 @@
+---
+title: "Authentication"
+sidebarTitle: "Authentication"
+description: "Authenticate OceanX Developer API requests with a bearer API key."
+icon: "key"
+---
+
+Every request (except `GET /api/v1`) requires an API key sent as a bearer token in the `Authorization` header.
+
+```http
+Authorization: Bearer ox_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+## Creating and managing keys
+
+Create and manage keys in the OceanX app under **Settings → Developer API** (also reachable from the account menu → **Developer API**).
+
+<Warning>
+  A key is shown **once** at creation — store it securely. OceanX only keeps a hash and cannot show it again.
+</Warning>
+
+- Up to **10 active keys** per account.
+- Keys are prefixed `ox_live_` so secret-scanners can detect leaks.
+- Revoke a key any time; **revocation takes effect immediately**.
+
+## Using your key
+
+```bash
+curl https://www.oceanx.trade/api/v1/tracker/wallets \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+<Tip>
+  Store keys in environment variables or a secret manager. Never commit them to source control or expose them in a browser bundle.
+</Tip>
+
+## Auth errors
+
+| Status | `code` | Meaning |
+| --- | --- | --- |
+| `401` | `missing_api_key` | No `Authorization: Bearer` header. |
+| `401` | `invalid_api_key` | Unknown or revoked key. |
+
+See [Errors](/api/errors) for the full list of error codes.

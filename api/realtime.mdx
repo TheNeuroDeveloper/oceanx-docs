@@ -1,0 +1,136 @@
+---
+title: "Realtime Feed"
+sidebarTitle: "Realtime Feed"
+description: "Stream live trade, balance and PnL updates for tracked wallets over WebSocket."
+icon: "bolt"
+---
+
+The realtime feed streams the same live events the OceanX in-app Tracker uses: trades, balance updates and live PnL for every wallet in your view.
+
+## Getting a session
+
+Mint a short-lived WebSocket ticket by calling [`GET /tracker/realtime/session`](/api/endpoints/realtime-session):
+
+```bash
+curl "https://www.oceanx.trade/api/v1/tracker/realtime/session" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+```json
+{
+  "wsUrl": "wss://stream.oceanx.trade/wallet/track/ws?ticket=…&wallets=5Q54…e4j1,9aB…",
+  "wallets": ["5Q54…e4j1", "9aB…"],
+  "expiresInSeconds": 60
+}
+```
+
+If you have no tracked wallets yet:
+
+```json
+{
+  "wsUrl": "",
+  "wallets": [],
+  "expiresInSeconds": 0,
+  "message": "No tracked wallets in this view yet. Track a wallet first, then open a session."
+}
+```
+
+<Warning>
+  The `wsUrl` (and its ticket) is valid for **~60 seconds** — open it promptly. **Re-fetch a session before each (re)connect.** Tickets are single-use-window and expire; don't cache the URL.
+</Warning>
+
+## Connecting
+
+Open the `wsUrl` with any WebSocket client in **binary** mode. Frames are **MessagePack**-encoded (the app decodes with `@msgpack/msgpack`; a JSON text fallback is also accepted). Every frame has a `type`.
+
+## Frame types
+
+### Initial frame — `snapshot`
+
+Sent once on connect: the current cached state for each tracked wallet.
+
+```jsonc
+{
+  "type": "snapshot",
+  "wallets": {
+    "5Q54…e4j1": {
+      "balances": {
+        "<mint>": { "balance": "12345.67", "lastTradeTs": 1751385600000 }
+      },
+      "recent_trades": [ /* trade frames, see below (up to 200) */ ]
+    }
+  }
+}
+```
+
+### `trade`
+
+Same shape as items in [`GET /tracker/trades`](/api/endpoints/trades) (`type: "trade"`).
+
+### `balance_update`
+
+```jsonc
+{
+  "type": "balance_update",
+  "wallet": "5Q54…e4j1",
+  "mint": "EKpQ…zcjm",
+  "balance_before": "10000.0",
+  "balance_after": "12345.67",
+  "slot": 301234567,
+  "ts": 1751385600000,
+  "signature": "3xY…"
+}
+```
+
+### `pnl` and `pnl_summary`
+
+Live profit-and-loss for a wallet. `data` is the upstream PnL payload verbatim.
+
+```jsonc
+{
+  "type": "pnl_summary",
+  "wallet": "5Q54…e4j1",
+  "ts": 1751385600000,
+  "data": { /* … */ }
+}
+```
+
+## Node.js example
+
+```js
+import WebSocket from "ws";
+import { decode } from "@msgpack/msgpack";
+
+const API_KEY = process.env.OCEANX_API_KEY;
+const BASE = "https://www.oceanx.trade/api/v1";
+
+async function connect() {
+  const res = await fetch(`${BASE}/tracker/realtime/session`, {
+    headers: { Authorization: `Bearer ${API_KEY}` },
+  });
+  const { wsUrl } = await res.json();
+  if (!wsUrl) return console.log("No tracked wallets yet.");
+
+  const ws = new WebSocket(wsUrl);
+  ws.binaryType = "arraybuffer";
+
+  ws.on("message", (raw) => {
+    const frame =
+      typeof raw === "string"
+        ? JSON.parse(raw)
+        : decode(new Uint8Array(raw));
+
+    if (frame.type === "trade") {
+      console.log(
+        `${frame.side.toUpperCase()} ${frame.symbol} $${frame.volume_usd} by ${frame.wallet}`
+      );
+    }
+  });
+
+  // Reconnect with a fresh session (tickets expire ~60s).
+  ws.on("close", () => setTimeout(connect, 1000));
+  ws.on("error", () => ws.close());
+}
+
+connect();
+```

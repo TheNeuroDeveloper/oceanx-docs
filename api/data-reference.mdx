@@ -1,0 +1,41 @@
+---
+title: "Data Reference"
+sidebarTitle: "Data Reference"
+description: "Field-level reference for wallet and trade objects returned by the OceanX Developer API."
+icon: "database"
+---
+
+## Wallet
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `wallet` | string | Solana address. |
+| `label` | string \| null | Your display label. |
+| `emoji` | string \| null | Your display emoji. |
+| `notes` | string \| null | Your private note. |
+| `groups` | string\[\] | Group ids this wallet is in. |
+| `status` | string | `pending` → `live`. |
+| `lastEventAtMs` | number \| null | Epoch ms of last observed event. |
+
+## Trade
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `wallet` | string | The tracked wallet that traded. |
+| `mint` | string | The non-SOL token mint. |
+| `side` | `"buy" | "sell"` | Trade direction. |
+| `price_usd` | number | Token price in USD. |
+| `volume_usd` | number | Trade size in USD. |
+| `volume_sol` | number? | Trade size in SOL, when available. |
+| `ts` | number | Epoch ms. |
+| `signature` | string | Transaction signature. |
+| `pool` / `dex` | string? | Pool address / DEX program. |
+| `market_cap_usd` | number? | Token market cap. |
+| `symbol` / `name` / `image` | string? | Token metadata. |
+
+## Status values
+
+| Value | Meaning |
+| --- | --- |
+| `pending` | Wallet added, no observed activity yet. |
+| `live` | At least one event has been observed for this wallet. |

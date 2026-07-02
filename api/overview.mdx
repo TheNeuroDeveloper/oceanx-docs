@@ -1,0 +1,67 @@
+---
+title: "API Overview"
+sidebarTitle: "Overview"
+description: "Track Solana wallets and stream live trade, balance and PnL data with the OceanX Developer API."
+icon: "book-open"
+---
+
+The OceanX Developer API lets you track Solana wallets and receive the same data and live feed the OceanX in-app Tracker uses — programmatically. **v1** covers **wallet tracking**: add and remove wallets, read tracker state, pull recent trades, and open a realtime WebSocket for live trade, balance and PnL updates.
+
+<Note>
+  The API is currently in **beta** and **free** to use while in beta.
+</Note>
+
+## Base URL
+
+```text
+https://www.oceanx.trade/api/v1
+```
+
+Use the `www.` host directly — the apex `oceanx.trade` issues a 307 redirect, and some HTTP clients drop the `Authorization` header across a cross-host redirect.
+
+All endpoints are under `/api/v1`. Responses are JSON. CORS is open (`Access-Control-Allow-Origin: *`), but **your API key is a secret** — call the API from a server or trusted backend, never expose the key in a public browser app.
+
+## What you can do with v1
+
+<CardGroup cols={2}>
+  <Card title="Track wallets" icon="wallet" href="/api/endpoints/wallets">
+    Add, list and remove Solana wallets from your tracker.
+  </Card>
+
+  <Card title="Read tracker state" icon="list" href="/api/endpoints/snapshot">
+    Pull your groups, wallets and status in one snapshot.
+  </Card>
+
+  <Card title="Recent trades" icon="chart-line" href="/api/endpoints/trades">
+    Fetch the most recent normalized trades across tracked wallets.
+  </Card>
+
+  <Card title="Realtime WebSocket" icon="bolt" href="/api/realtime">
+    Stream live trade, balance and PnL frames as they happen.
+  </Card>
+</CardGroup>
+
+## Quickstart
+
+<Steps>
+  <Step title="Create an API key">
+    In the OceanX app, go to **Settings → Developer API** (also reachable from the account menu → **Developer API**) and create a new key. The key is shown **once** — store it securely.
+  </Step>
+  <Step title="Make your first request">
+    ```bash
+    curl https://www.oceanx.trade/api/v1/tracker/wallets \
+      -H "Authorization: Bearer $OCEANX_API_KEY"
+    ```
+  </Step>
+  <Step title="Track a wallet">
+    ```bash
+    curl -X POST https://www.oceanx.trade/api/v1/tracker/wallets \
+      -H "Authorization: Bearer $OCEANX_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"wallet":"5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1","label":"Whale #1","emoji":"🐳"}'
+    ```
+  </Step>
+  <Step title="Open a realtime session">
+    See the [Realtime feed](/api/realtime) guide to stream live updates over WebSocket.
+  </Step>
+</Steps>
