@@ -26,9 +26,10 @@
     "primary": null
   },
   "navigation": {
-    "groups": [
+    "pages": [
       {
         "group": "Start Here",
+        "icon": "flag",
         "pages": [
           "introduction",
           "getting-started/overview",
@@ -37,11 +38,11 @@
           "getting-started/funding-wallet",
           "getting-started/supported-regions",
           "getting-started/fees-cashback-referrals"
-        ],
-        "icon": "flag"
+        ]
       },
       {
         "group": "Trading",
+        "icon": "chart-line-up-down",
         "pages": [
           "trading/overview",
           "trading/scout",
@@ -50,48 +51,47 @@
           "trading/portfolio",
           "trading/intel",
           "trading/alerts"
-        ],
-        "icon": "chart-line-up-down"
+        ]
       },
       {
         "group": "Markets",
+        "icon": "chart-line",
         "pages": [
           "markets/perpetuals",
           "markets/predict",
           "markets/xstocks",
           "markets/yield"
-        ],
-        "icon": "chart-line"
+        ]
       },
       {
         "group": "Research",
+        "icon": "newspaper",
         "pages": [
           "research/overview",
           "research/ai-assistant",
           "research/workspaces"
-        ],
-        "icon": "newspaper"
+        ]
       },
       {
         "group": "Social",
+        "icon": "people-group",
         "pages": [
           "social/overview",
           "social/profiles",
           "social/groups",
           "social/voice"
-        ],
-        "icon": "people-group"
+        ]
       },
       {
         "group": "Rewards",
+        "icon": "cash-app",
         "pages": [
           "rewards/points",
           "rewards/quests",
           "rewards/competitions",
           "rewards/seasons",
           "rewards/leaderboards"
-        ],
-        "icon": "cash-app"
+        ]
       },
       {
         "group": "Developer API",
@@ -126,7 +126,8 @@
           "misc/faq",
           "misc/changelog"
         ]
-      }
+      },
+      ".mintlify/Assistant.md"
     ]
   }
 }
