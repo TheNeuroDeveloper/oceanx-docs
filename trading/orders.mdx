@@ -1,53 +1,54 @@
 ---
 title: "Orders"
-description: "Understand market orders and planned advanced order types on OceanX."
+description: "Market, limit, stop loss, take profit, trailing stop and DCA orders on OceanX."
 ---
 
-# Orders
-
-OceanX orders are designed to reduce friction while giving traders more control over execution.
+OceanX orders are designed to reduce friction while giving you control over
+execution. All of the types below are available for spot trading from a token page.
 
 ## Market orders
 
-Market orders execute immediately using the OceanX routing engine.
+Market orders execute immediately through the OceanX routing engine. Each one is
+simulated, smart-routed, signed by your embedded wallet and submitted for execution.
 
-Orders are:
+## Order types
 
-- Placed directly through the OceanX UI
-- Automatically signed using embedded wallet infrastructure
-- Simulated
-- Smart routed
-- Submitted for execution
+| Type | What it does |
+| --- | --- |
+| Market | Fills immediately at the best routed price |
+| Limit | Rests until the market reaches your price |
+| Stop loss | Sells if the price falls to your trigger |
+| Take profit | Sells if the price rises to your trigger |
+| Trailing stop | Follows the price up and sells if it falls back by your chosen distance |
+| DCA | Splits a buy or sell into scheduled portions over time |
 
-## Limit orders
+Triggered orders are evaluated server-side and submitted for you when the condition
+is met, so you don't need to keep the page open.
 
-Limit orders are not yet available for spot meme coin trading on OceanX.
+<Warning>
+  A trigger is a *submission* condition, not a guaranteed fill. Once triggered, the
+  order goes to market and can still move on slippage — in thin books it can fail
+  outright. Check [Exit Check](https://www.oceanx.trade/exit-check) before assuming a
+  large position can be sold at the price you see.
+</Warning>
 
-Perpetuals support both market and limit orders through the Hyperliquid integration. See [Perpetuals](/markets/perpetuals) for details.
+## Perpetuals
 
-Spot limit orders will be placed directly through the OceanX interface and automatically signed by the user's wallet infrastructure when they become available.
-
-## Planned order types
-
-OceanX plans to support additional spot order types, including:
-
-- Stop Loss
-- Take Profit
-- Trailing Stop
-- DCA (Dollar Cost Averaging)
-
-DCA details are still to be confirmed.
+Perpetuals have their own order entry — see [Perpetuals](/markets/perpetuals).
 
 ## FAQ
 
 ### Do I need to manually sign every order?
 
-Not for routine trades. When session authorization is active, orders within your defined limits sign automatically on device. See [Wallets & Security](/getting-started/wallets-security).
+Not for routine trades. When session authorization is active, orders within your
+defined limits sign automatically on device. See
+[Wallets & Security](/getting-started/wallets-security).
 
 ### Are limit orders available for spot trading?
 
-Not yet. Limit orders are available for perpetuals through Hyperliquid. Spot limit orders are planned.
+Yes, along with stop loss, take profit, trailing stop and DCA.
 
-### Is DCA live?
+### Does a stop loss guarantee my exit price?
 
-DCA is planned. Details will be confirmed in future updates.
+No. It decides *when* the order is submitted, not what it fills at. See the warning
+above.

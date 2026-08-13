@@ -136,8 +136,7 @@
           "misc/faq",
           "misc/changelog"
         ]
-      },
-      ".mintlify/Assistant.md"
+      }
     ]
   }
 }
