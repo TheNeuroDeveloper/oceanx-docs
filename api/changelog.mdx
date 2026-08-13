@@ -4,7 +4,17 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
-## 2026-08-13 — Spot quotes & exit check
+## 2026-08-13 — Market Lighthouse, spot quotes & exit check
+
+### Market Lighthouse
+
+New: [`GET /market/lighthouse`](/api/endpoints/market-lighthouse) returns the
+latest VM-cached Solana DEX and launchpad activity frame across 5m, 1h, 6h and
+24h windows. It includes transactions, unique wallets, buy/sell USD volume,
+tokens created and migrations with change percentages.
+
+The endpoint is read-only, uses the standard REST budget, and needs only
+`md.read`, so **existing keys keep working**.
 
 New: [Spot Quotes](/api/spot) — executable Solana swap quotes off OceanX's own
 router, and the exit checker that quotes a ladder of position sizes so you can see

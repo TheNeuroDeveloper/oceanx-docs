@@ -111,7 +111,8 @@
               "api/endpoints/realtime-session",
               "api/endpoints/spot-quote",
               "api/endpoints/spot-exit-check",
-              "api/endpoints/spot-quote-stream"
+              "api/endpoints/spot-quote-stream",
+              "api/endpoints/market-lighthouse"
             ]
           },
           "api/spot",

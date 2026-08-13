@@ -1,0 +1,63 @@
+---
+title: "Market Lighthouse"
+sidebarTitle: "Market Lighthouse"
+description: "Read the latest VM-cached Solana DEX and launchpad activity frame."
+---
+
+<Info>
+  **`GET /api/v1/market/lighthouse`**
+</Info>
+
+Returns the latest complete Solana market activity frame cached by OceanX.
+It covers the aggregate market plus individual DEXes, launchpads, and
+provider-discovered market families across `5m`, `1h`, `6h`, and `24h`.
+
+Requires the **`md.read`** scope and uses the standard [120 requests per
+minute](/api/rate-limits) budget.
+
+<Tip>
+  OceanX polls the upstream source once on the VM and shares the cached frame
+  with every caller. Your request does not create another upstream market-data
+  request.
+</Tip>
+
+## Request
+
+```bash
+curl "https://www.oceanx.trade/api/v1/market/lighthouse" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+The response contains `source`, `generatedAtMs`, and a `markets` array. The
+first aggregate row normally has `market: "all"`; treat every other market ID
+as opaque and use its returned `label` for display.
+
+## Response fields
+
+| Field | Notes |
+| --- | --- |
+| `source` | Producer provenance. Currently `solanatracker:lighthouse`. |
+| `generatedAtMs` | Unix milliseconds when the OceanX VM produced this replacement frame. |
+| `markets[].market` | Stable provider market ID such as a DEX, launchpad, or market family. |
+| `markets[].label` | Human-readable market name. |
+| `markets[].icon` | Provider-owned icon URL; may be empty. |
+| `markets[].url` | Provider-owned market URL; may be empty. |
+| `markets[].parent` | Parent market ID for a nested market, otherwise `null`. |
+| `markets[].stats` | Four windows: `5m`, `1h`, `6h`, and `24h`. |
+
+Every stats window contains:
+
+| Metric | Shape | Notes |
+| --- | --- | --- |
+| `transactions` | `{ total, buys, sells, changePct }` | Spot trade count and side split. |
+| `wallets` | `{ total, changePct }` | Unique participating wallets. |
+| `volume` | `{ total, buys, sells, changePct }` | USD volume and side split. |
+| `tokensCreated` | `{ total, changePct }` | Tokens created in that market/window. |
+| `migrations` | `{ total, changePct }` | Launchpad migrations in that market/window. |
+
+<Note>
+  This endpoint is read-only market context. It does not submit, simulate, or
+  imply a trade.
+</Note>
