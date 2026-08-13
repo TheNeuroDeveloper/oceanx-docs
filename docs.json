@@ -86,6 +86,7 @@
         "icon": "cash-app",
         "pages": [
           "rewards/points",
+          "rewards/callouts",
           "rewards/quests",
           "rewards/competitions",
           "rewards/seasons",
@@ -112,7 +113,8 @@
               "api/endpoints/spot-quote",
               "api/endpoints/spot-exit-check",
               "api/endpoints/spot-quote-stream",
-              "api/endpoints/market-lighthouse"
+              "api/endpoints/market-lighthouse",
+              "api/endpoints/callouts"
             ]
           },
           "api/spot",

@@ -1,0 +1,92 @@
+---
+title: "Callouts"
+sidebarTitle: "Callouts"
+description: "Public token callouts with live click and volume attribution stats."
+---
+
+<Info>
+  **`GET /api/v1/callouts/feed`** · **`GET /api/v1/callouts/token/{mint}`**
+</Info>
+
+Callouts are public token calls posted by OceanX users. Each callout tracks the
+clicks, distinct traders and USD volume it drove, and the creator earns a share
+of platform fees on that attributed volume. These endpoints are read-only.
+
+Both require the **`md.read`** scope (on every key by default) and use the
+standard [REST budget](/api/rate-limits).
+
+## Global feed
+
+`GET /api/v1/callouts/feed`
+
+| Query | Default | Notes |
+| --- | --- | --- |
+| `sort` | `recent` | `recent` (newest first) or `top` (by attributed volume). |
+| `limit` | `20` | 1–50. |
+| `cursor` | — | Opaque cursor from the previous page's `nextCursor`. |
+
+```bash
+curl "https://www.oceanx.trade/api/v1/callouts/feed?sort=top&limit=10" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Callouts for one token
+
+`GET /api/v1/callouts/token/{mint}`
+
+| Path / query | Default | Notes |
+| --- | --- | --- |
+| `mint` | — | **Required.** Base58 Solana mint address. |
+| `sort` | `top` | `top` or `recent`. |
+| `limit` | `20` | 1–50. |
+| `cursor` | — | Opaque pagination cursor. |
+
+```bash
+curl "https://www.oceanx.trade/api/v1/callouts/token/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+Both endpoints return a `CalloutPage`:
+
+```json
+{
+  "callouts": [
+    {
+      "id": "ftVBe48_Q8",
+      "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+      "body": "Dog coin classic — volume rotating back in.",
+      "tokenSymbol": "Bonk",
+      "tokenName": "Bonk",
+      "tokenImageUrl": "https://…",
+      "priceUsdAtCreate": 0.0000023,
+      "status": "active",
+      "clickCount": 41,
+      "traderCount": 12,
+      "attributedVolumeUsd": 18250.4,
+      "earnedUsd": 18.25,
+      "pointsAwarded": 1825,
+      "createdAt": "2026-08-13T18:10:45.359Z",
+      "expiresAt": "2026-08-20T18:10:45.359Z",
+      "creator": {
+        "id": "…",
+        "username": "adamx",
+        "displayName": "AdamX",
+        "avatarUrl": "https://…"
+      }
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+Field notes:
+
+- `priceUsdAtCreate` is the server-resolved token price when the callout was
+  posted — the baseline for "% since callout". `null` when no price resolved.
+- `attributedVolumeUsd` / `earnedUsd` / `pointsAwarded` update as attributed
+  trades settle; `traderCount` counts distinct traders.
+- The public share page for any callout is `https://www.oceanx.trade/c/{id}`.
+- Creating callouts is app-only for now (token page → megaphone); the API
+  surface is read-only.

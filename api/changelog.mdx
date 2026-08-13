@@ -4,6 +4,22 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-08-13 — Callouts
+
+New: [Callouts](/api/endpoints/callouts) — public token calls posted by OceanX
+users, with live click / trader / attributed-volume stats. Creators earn a share
+of platform fees on the volume their callouts drive; the API exposes the data
+read-only.
+
+- [`GET /callouts/feed`](/api/endpoints/callouts) — the global feed, newest
+  first or by attributed volume.
+- [`GET /callouts/token/{mint}`](/api/endpoints/callouts) — callouts targeting
+  one token.
+
+Both need only `md.read` and the standard REST budget, so **existing keys keep
+working**. The feature itself is documented under
+[Rewards → Callouts](/rewards/callouts).
+
 ## 2026-08-13 — Market Lighthouse, spot quotes & exit check
 
 ### Market Lighthouse
