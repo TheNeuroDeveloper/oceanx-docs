@@ -1,0 +1,98 @@
+---
+title: "Spot Quotes"
+sidebarTitle: "Spot Quotes"
+description: "Executable Solana swap quotes off OceanX's own router, and the exit checker that tells you whether a whole position can actually leave."
+---
+
+Quotes come from OceanX's own router on our execution VM in Frankfurt — the same
+engine the OceanX app trades against. Route computation is typically 1–2ms, so
+your end-to-end latency is dominated by the network rather than by us.
+
+These endpoints are **read-only**. They quote; they never build, sign or submit a
+transaction.
+
+<CardGroup cols={2}>
+  <Card title="One quote" icon="calculator" href="/api/endpoints/spot-quote">
+    Normalized price, route and impact for a single size.
+  </Card>
+
+  <Card title="Exit check" icon="door-open" href="/api/endpoints/spot-exit-check">
+    Can this whole position leave, and at what price?
+  </Card>
+
+  <Card title="Re-quote stream" icon="bolt" href="/api/endpoints/spot-quote-stream">
+    A server-side SSE loop that holds one pair's price live.
+  </Card>
+
+  <Card title="Rate limits" icon="gauge" href="/api/rate-limits">
+    Quotes have their own 300 / minute budget.
+  </Card>
+</CardGroup>
+
+All three need the **`md.read`** scope, which is on every key by default — existing
+keys work with no changes.
+
+## Four things to get right
+
+Each of these silently corrupts a number if you assume rather than check, and each
+one fails in the direction that makes an untradeable position look fine.
+
+### 1. `priceImpactPct` is a PERCENT, not a fraction
+
+`1.5` means 1.5%.
+
+```json
+{ "priceImpactPct": 44.85 }   // 44.85%, not 4485%
+```
+
+<Warning>
+  **Jupiter's `priceImpactPct` is fractional** — `0.4485` for the same 44.85%. Code
+  ported from Jupiter is off by 100x, in the direction that makes a trapped bag
+  look tradeable.
+</Warning>
+
+### 2. Impact under 0.1% is noise — check `impactMeasurable`
+
+The router caches its mid per route, so a very small size can report *more* impact
+than a larger one on the same pair. When `impactMeasurable` is `false`, render "—"
+rather than the number.
+
+### 3. A bigger size can quote a BETTER rate
+
+The router re-solves for every size, and a different pool can win at a larger
+amount. A **negative** `realizedImpactPct` is a real outcome, not an error — don't
+clamp it to zero and don't treat it as a failure.
+
+### 4. Absurd sizes return `200`, not an error — check `clamped`
+
+Past the router's available liquidity you get a fabricated floor price with a `200`
+status, not a rejection. When `clamped` is `true` the number is an artifact.
+
+<Warning>
+  **Never present a `clamped` quote as proceeds.** It is the router running out of
+  liquidity, not a price anyone can fill at.
+</Warning>
+
+## Amounts are base units, as strings
+
+Like the router itself, `amount` is **atomic / base units**, passed as a **string**
+— a memecoin balance overflows a JSON number at 5+ decimals.
+
+```json
+{ "amount": "1000000000" }   // 1 SOL at 9 decimals
+```
+
+Every endpoint also accepts `uiAmount` in human units, but only alongside the
+matching decimals field, because scaling without decimals would invent a number.
+Anything that rounds to zero base units is rejected rather than treated as dust.
+
+## Errors
+
+Standard [error envelope](/api/errors). Codes specific to these endpoints:
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `no_route` | 404 | No route for this pair and size. A routing outcome, not an outage. |
+| `invalid_quote_request` | 400 | The engine rejected your parameters. |
+| `quote_engine_unavailable` | 503 | Router unreachable or timed out. Retry. |
+| `invalid_query` / `invalid_body` | 400 | Failed validation before reaching the engine. |

@@ -4,6 +4,28 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-08-13 — Spot quotes & exit check
+
+New: [Spot Quotes](/api/spot) — executable Solana swap quotes off OceanX's own
+router, and the exit checker that quotes a ladder of position sizes so you can see
+whether a whole bag can actually be sold.
+
+- [`GET /spot/quote`](/api/endpoints/spot-quote) — one normalized quote: route,
+  venues, impact, `minOutAmount`.
+- [`POST /spot/exit-check`](/api/endpoints/spot-exit-check) — quotes several
+  fractions of a position and returns a `clean` / `thin` / `trapped` / `no_route`
+  verdict plus `maxCleanFraction`, the largest size that exits inside 2%.
+- [`GET /spot/quote/stream`](/api/endpoints/spot-quote-stream) — a server-side SSE
+  re-quote loop.
+
+All three need only `md.read`, which is on every key already, so **existing keys
+work with no changes**. Quotes are metered in their own
+[300 / minute budget](/api/rate-limits#quote-endpoints).
+
+Two things to read before integrating: `priceImpactPct` is a **percent** where
+Jupiter's equivalent field is fractional, so ported code is off by 100x; and check
+`clamped` before showing any number as proceeds.
+
 ## v1 (beta)
 
 Initial release. Wallet tracker endpoints and realtime WebSocket:

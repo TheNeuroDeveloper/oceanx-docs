@@ -10,6 +10,23 @@ Rate limits are applied **per API key** using a sliding window.
 | --- | --- |
 | Requests | **120 / minute** |
 
+## Quote endpoints
+
+The [spot quote endpoints](/api/spot) are metered in a **separate** budget, because
+they reach the same live router OceanX's own order flow quotes against:
+
+| Limit | Value |
+| --- | --- |
+| Quote requests | **300 / minute** |
+
+Spending one budget does not touch the other. Within it:
+
+| Endpoint | Cost |
+| --- | --- |
+| [`GET /spot/quote`](/api/endpoints/spot-quote) | 1 per request |
+| [`POST /spot/exit-check`](/api/endpoints/spot-exit-check) | **1 per ladder rung** — a 5-rung ladder costs 5 |
+| [`GET /spot/quote/stream`](/api/endpoints/spot-quote-stream) | **1 per tick** |
+
 ## Response headers
 
 Every response includes the current rate-limit state:

@@ -108,9 +108,13 @@
               "api/endpoints/wallets.mdx",
               "api/endpoints/snapshot.mdx",
               "api/endpoints/trades.mdx",
-              "api/endpoints/realtime-session.mdx"
+              "api/endpoints/realtime-session.mdx",
+              "api/endpoints/spot-quote.mdx",
+              "api/endpoints/spot-exit-check.mdx",
+              "api/endpoints/spot-quote-stream.mdx"
             ]
           },
+          "api/spot",
           "api/realtime",
           "api/data-reference",
           "api/changelog"

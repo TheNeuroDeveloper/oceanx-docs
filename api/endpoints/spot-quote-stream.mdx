@@ -1,0 +1,111 @@
+---
+title: "Quote stream"
+sidebarTitle: "Quote stream"
+description: "A server-side Server-Sent Events loop that re-quotes one pair on an interval."
+---
+
+<Info>
+  **`GET /api/v1/spot/quote/stream`**
+</Info>
+
+Holds one pair's price live by re-quoting on an interval and pushing each result
+over **Server-Sent Events**.
+
+Requires the **`md.read`** scope. Costs **one per tick** against the [quote
+budget](/api/rate-limits#quote-endpoints).
+
+<Warning>
+  **Server-side only.** Authentication is the `Authorization` header, and the
+  browser `EventSource` API cannot set headers — which is correct, because your API
+  key is a secret. Consume this from your backend and relay it to your frontend
+  over your own transport.
+</Warning>
+
+## Query parameters
+
+Takes everything [`/spot/quote`](/api/endpoints/spot-quote) takes, plus:
+
+| Query | Default | Notes |
+| --- | --- | --- |
+| `intervalMs` | `1000` | 250–60000. How often to re-quote. |
+| `maxSeconds` | `240` | 1–240. Connection lifespan. We always close with a `close` event rather than letting it be severed mid-frame. |
+| `onlyChanges` | `false` | Emit only when the proceeds or the chosen route actually move. |
+
+## Request
+
+```bash
+curl -N "https://www.oceanx.trade/api/v1/spot/quote/stream?\
+inputMint=So11111111111111111111111111111111111111112&\
+outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&\
+amount=1000000000&intervalMs=2000&onlyChanges=true" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Frames
+
+Every `data:` payload is JSON.
+
+| Event | Meaning |
+| --- | --- |
+| `open` | Sent once on connect: your config as we actually clamped it. |
+| `quote` | `{ seq, atMs, changed, quote }` — `quote` is the same shape as [`/spot/quote`](/api/endpoints/spot-quote). |
+| `error` | `{ seq, atMs, code, message }`. **The stream continues** — a thin book that stops routing is data, not a fault. |
+| `throttled` | `{ retryAfterSec, limit }` — your quote budget is spent. The stream stays open and ticks resume when the window rolls. |
+| `close` | `{ reason, reconnect }` — always sent before we finish. |
+
+```text
+event: open
+data: {"inputMint":"So111…","outputMint":"EPjFW…","amount":"1000000000","intervalMs":2000,"maxSeconds":240,"onlyChanges":true}
+
+event: quote
+data: {"seq":1,"atMs":1786351341706,"changed":true,"quote":{"outAmount":"76647149","priceImpactPct":0.0034,"venues":["Raydium CLMM"]}}
+
+event: close
+data: {"reason":"max_duration","reconnect":"Reopen the stream to continue; nothing is buffered server-side while you are disconnected."}
+```
+
+`: hb` comment lines are sent every 20s so intermediaries don't idle the
+connection out when `intervalMs` is long.
+
+## Node.js example
+
+```js
+const response = await fetch(
+  "https://www.oceanx.trade/api/v1/spot/quote/stream?" +
+    new URLSearchParams({
+      inputMint: "So11111111111111111111111111111111111111112",
+      outputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      amount: "1000000000",
+      intervalMs: "2000",
+      onlyChanges: "true",
+    }),
+  { headers: { Authorization: `Bearer ${process.env.OCEANX_API_KEY}` } },
+);
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  buffer += decoder.decode(value, { stream: true });
+
+  // SSE frames are separated by a blank line.
+  const frames = buffer.split("\n\n");
+  buffer = frames.pop() ?? "";
+
+  for (const frame of frames) {
+    const event = frame.match(/^event: (.+)$/m)?.[1];
+    const data = frame.match(/^data: (.+)$/m)?.[1];
+    if (!event || !data) continue; // heartbeat comment
+    if (event === "quote") console.log(JSON.parse(data).quote.outAmount);
+    if (event === "close") console.log("closed:", JSON.parse(data).reason);
+  }
+}
+```
+
+<Note>
+  Nothing is buffered server-side while you're disconnected. On `close`, reopen the
+  stream — you'll get a fresh quote on the first tick rather than a replay.
+</Note>

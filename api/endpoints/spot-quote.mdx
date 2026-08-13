@@ -1,0 +1,102 @@
+---
+title: "Spot quote"
+sidebarTitle: "Spot quote"
+description: "One normalized swap quote for one size, off OceanX's own router."
+---
+
+<Info>
+  **`GET /api/v1/spot/quote`**
+</Info>
+
+One quote for one size: the route the engine picked, the venues it touches, the
+price impact, and the worst-case output after slippage.
+
+Requires the **`md.read`** scope. Costs **1** against the [quote
+budget](/api/rate-limits#quote-endpoints).
+
+## Query parameters
+
+| Query | Default | Notes |
+| --- | --- | --- |
+| `inputMint` | — | **Required.** Base58 mint you're selling. |
+| `outputMint` | — | **Required.** Base58 mint you're buying. Must differ from `inputMint`. |
+| `amount` | — | Base units, integer string. Required unless you send `uiAmount`. |
+| `uiAmount` | — | Human units. Requires `inputDecimals`. |
+| `inputDecimals` | — | Decimals of `inputMint`. Required with `uiAmount`; also returns `inUiAmount`. |
+| `outputDecimals` | — | Decimals of `outputMint`. Adds `outUiAmount` and `minOutUiAmount`. |
+| `slippageBps` | `50` | 1–1000 (max 10%), enforced by the engine. |
+| `dexes` | — | Restrict routing to these venue labels (comma-separated). |
+| `pools` | — | Restrict routing to these pool addresses (comma-separated). |
+| `maxHops` | — | 1–4. |
+| `onlyDirectRoutes` | `false` | Single-hop routes only. |
+
+## Request
+
+```bash
+curl "https://www.oceanx.trade/api/v1/spot/quote?\
+inputMint=So11111111111111111111111111111111111111112&\
+outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&\
+amount=1000000000&outputDecimals=6" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+```json
+{
+  "inputMint": "So11111111111111111111111111111111111111112",
+  "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "inAmount": "1000000000",
+  "outAmount": "76647149",
+  "minOutAmount": "76263913",
+  "slippageBps": 50,
+  "priceImpactPct": 0.0034,
+  "impactMeasurable": false,
+  "clamped": false,
+  "contextSlot": 361402118,
+  "route": [
+    {
+      "dex": "Raydium CLMM",
+      "pool": "5s7njN2X6k3trkibTKX6LJFu4PnybYhCuADP9LD2fhuP",
+      "inputMint": "So11111111111111111111111111111111111111112",
+      "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "percent": 100,
+      "amountIn": "1000000000",
+      "amountOut": "76647149",
+      "priceImpactPct": 0.0034
+    }
+  ],
+  "venues": ["Raydium CLMM"],
+  "engineTimeMs": 1.43,
+  "swapUsdValue": 76.65,
+  "requestId": "raptor-1786351341706",
+  "engine": "raptor",
+  "outUiAmount": 76.647149,
+  "minOutUiAmount": 76.263913
+}
+```
+
+## Response fields
+
+| Field | Notes |
+| --- | --- |
+| `inAmount` / `outAmount` | Base units, strings. |
+| `minOutAmount` | Worst-case output after `slippageBps`, as enforced on-chain. |
+| `priceImpactPct` | **Percent**, not a fraction. See [the four gotchas](/api/spot#four-things-to-get-right). |
+| `impactMeasurable` | `false` when impact sits inside the noise floor — show "—", not the number. |
+| `clamped` | `true` when this is the liquidity floor rather than a fill. Never show it as proceeds. |
+| `contextSlot` | Slot the route was computed against. |
+| `route[]` | Per-leg `dex`, `pool`, `inputMint`, `outputMint`, `percent`, `amountIn`, `amountOut`, `priceImpactPct`. |
+| `venues[]` | Distinct venue labels across the route. |
+| `engineTimeMs` | Router compute time in ms (typically 1–2). |
+| `swapUsdValue` | Upstream USD notional **when available** — `null` on many pairs. Don't depend on it. |
+| `requestId` | Quote id. Quote this if you report a bad route to us. |
+| `outUiAmount` / `minOutUiAmount` | Only present when you pass `outputDecimals`. |
+
+<Note>
+  A quote is an indication, not a guarantee. Books move between quoting and
+  landing, which is exactly why `minOutAmount` exists.
+</Note>
+
+To find out whether a whole position can leave — not just this one size — use the
+[exit check](/api/endpoints/spot-exit-check).

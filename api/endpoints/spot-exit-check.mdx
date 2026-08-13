@@ -1,0 +1,153 @@
+---
+title: "Exit check"
+sidebarTitle: "Exit check"
+description: "Quote a ladder of position sizes to find out whether a whole bag can actually be sold, and at what price."
+---
+
+<Info>
+  **`POST /api/v1/spot/exit-check`**
+</Info>
+
+The headline price of a token tells you what the **first** token sells for. This
+tells you what the **last** one does.
+
+It quotes several fractions of your position and reports the realized rate at each
+size, so you can see where the price stops being true — and what size you can
+actually get out at.
+
+Requires the **`md.read`** scope. Costs **one per ladder rung** against the [quote
+budget](/api/rate-limits#quote-endpoints): a 5-rung ladder costs 5.
+
+## Body
+
+| Field | Default | Notes |
+| --- | --- | --- |
+| `mint` | — | **Required.** The token you're exiting. |
+| `quoteMint` | wrapped SOL | What you're exiting into. Must differ from `mint`. |
+| `amount` | — | Bag size in base units, integer string. Required unless you send `uiAmount`. |
+| `uiAmount` | — | Bag size in human units. Requires `decimals`. |
+| `decimals` | — | Decimals of `mint`. Enables `realizedPrice` and UI amounts. |
+| `quoteDecimals` | `9` for SOL | Decimals of `quoteMint`. Enables UI proceeds. |
+| `slippageBps` | `50` | 1–1000. |
+| `ladder` | `[0.1, 0.25, 0.5, 1]` | Fractions of the bag to quote. 1–8 values, each in (0, 1]. |
+
+<Tip>
+  **Pass a small first rung.** Impact is measured against the *smallest* rung you
+  ask for, so a ladder starting at `0.1` measures against a tenth of your bag and
+  understates the true cost of leaving. `[0.01, 0.1, 0.25, 0.5, 1]` gives a much
+  tighter baseline — and the response tells you when yours is too coarse, via the
+  `coarse_baseline` warning.
+</Tip>
+
+## Request
+
+```bash
+curl -X POST https://www.oceanx.trade/api/v1/spot/exit-check \
+  -H "Authorization: Bearer $OCEANX_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    "uiAmount": 500000000,
+    "decimals": 5,
+    "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "quoteDecimals": 6,
+    "ladder": [0.01, 0.1, 0.25, 0.5, 1]
+  }'
+```
+
+## Response
+
+Abridged — the per-rung `quote` object is omitted here:
+
+```json
+{
+  "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+  "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "uiAmount": 500000000,
+  "decimals": 5,
+  "quoteDecimals": 6,
+  "slippageBps": 50,
+  "ladder": [0.01, 0.1, 0.25, 0.5, 1],
+  "summary": {
+    "verdict": "thin",
+    "fullExitImpactPct": 6.3114,
+    "fullExitOutUiAmount": 1063.446557,
+    "maxCleanFraction": 0.25,
+    "maxCleanUiAmount": 125000000,
+    "venues": ["Raydium AMM", "Whirlpool", "TesseraV"],
+    "warnings": []
+  },
+  "rungs": [
+    { "fraction": 0.01, "uiAmount": 5000000,   "outUiAmount": 11.3509,   "realizedImpactPct": 0,      "upstreamImpactPct": 0.0803, "isBaseline": true },
+    { "fraction": 0.1,  "uiAmount": 50000000,  "outUiAmount": 112.7560,  "realizedImpactPct": 0.6631, "upstreamImpactPct": 0.7414, "isBaseline": false },
+    { "fraction": 0.25, "uiAmount": 125000000, "outUiAmount": 278.8272,  "realizedImpactPct": 1.7424, "upstreamImpactPct": 1.8214, "isBaseline": false },
+    { "fraction": 0.5,  "uiAmount": 250000000, "outUiAmount": 547.7376,  "realizedImpactPct": 3.4898, "upstreamImpactPct": 3.5697, "isBaseline": false },
+    { "fraction": 1,    "uiAmount": 500000000, "outUiAmount": 1063.4466, "realizedImpactPct": 6.3114, "upstreamImpactPct": 5.0049, "isBaseline": false }
+  ]
+}
+```
+
+Read the `realizedImpactPct` column top to bottom. Selling a quarter of this
+position costs 1.7%; selling all of it costs 6.3%. `maxCleanFraction: 0.25` is the
+actionable number — **exit in quarters, not in one go.** No single headline quote
+would have shown you that.
+
+## `summary`
+
+| Field | Notes |
+| --- | --- |
+| `verdict` | `clean` \| `thin` \| `trapped` \| `no_route`. See below. |
+| `fullExitImpactPct` | Realized impact at full size, percent. |
+| `fullExitPrice` | Realized price at full size: `quoteMint` units per whole input token. |
+| `fullExitOutAmount` / `fullExitOutUiAmount` | Total proceeds for the whole bag. |
+| `maxCleanFraction` | Largest **quoted** fraction that stayed inside 2%. Ladder resolution, not a solved optimum — pass a denser `ladder` for a tighter answer. |
+| `maxCleanUiAmount` | The same size in tokens, when `decimals` is known. |
+| `venues[]` | Every venue the ladder touched. |
+| `warnings[]` | Caveats to surface. Each is `"code: message"` — split on the first colon for the stable code. |
+
+## Verdicts
+
+| Verdict | Meaning |
+| --- | --- |
+| `clean` | Full size exits within **2%** realized impact. |
+| `thin` | Full size exits at **2–10%**. Survivable, but size down or split. |
+| `trapped` | Full size costs **over 10%**, hit the router's liquidity floor, or has no route. |
+| `no_route` | No route at any rung — untradeable right now. |
+
+## `rungs[]`
+
+| Field | Notes |
+| --- | --- |
+| `fraction` | Which fraction of the bag this rung is. `1` is the whole thing. |
+| `amount` / `uiAmount` | Tokens sold at this rung. `uiAmount` is `null` without `decimals`. |
+| `outAmount` / `outUiAmount` | Proceeds for this rung. |
+| `realizedPrice` | `quoteMint` units per whole input token — **the realized price for selling this size**. Needs both decimals. |
+| `realizedImpactPct` | **Our** measurement: this rung's rate against the smallest rung's rate. May be negative — see [gotcha 3](/api/spot#3-a-bigger-size-can-quote-a-better-rate). |
+| `upstreamImpactPct` | The router's own figure, for comparison. Unusable below 0.1%. |
+| `isBaseline` | The rung everything else is measured against. |
+| `error` | Set when this rung had no route; `quote` is then `null`. |
+| `quote` | The full quote for this rung, same shape as [`/spot/quote`](/api/endpoints/spot-quote). |
+
+<Warning>
+  The baseline rung's `realizedImpactPct` is `0` **by definition, not by
+  measurement.** Don't read it as "this size is cheap to exit" — it is simply the
+  reference every other rung is compared against.
+</Warning>
+
+## Warning codes
+
+| Code | Meaning |
+| --- | --- |
+| `no_route_at_any_size` | Nothing routed. The token is untradeable right now. |
+| `partial_ladder` | Some rungs had no route and were skipped. |
+| `full_size_unquotable` | The whole bag has no route; a smaller rung was the largest that did. |
+| `clamped_quote` | A rung hit the liquidity floor. That rung's price is an artifact, not a fill. |
+| `coarse_baseline` | Your smallest rung is large, so impact is understated. Add a smaller one. |
+| `negative_marginal_proceeds` | A bigger rung returns **less money** than a smaller one — selling more nets you less. The strongest "this bag cannot leave" signal there is. |
+| `baseline_only_clean` | Only the baseline rung came in clean, and its 0% is definitional. The true clean size may be smaller still. |
+
+<Note>
+  A thin book that stops routing at size is **data, not an error** — you get a
+  `200` with a `no_route` verdict and the rungs that did fill. A non-2xx means we
+  could not produce the ladder at all.
+</Note>
