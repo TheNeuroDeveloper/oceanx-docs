@@ -144,6 +144,7 @@ would have shown you that.
 | `clamped_quote` | A rung hit the liquidity floor. That rung's price is an artifact, not a fill. |
 | `coarse_baseline` | Your smallest rung is large, so impact is understated. Add a smaller one. |
 | `negative_marginal_proceeds` | A bigger rung returns **less money** than a smaller one — selling more nets you less. The strongest "this bag cannot leave" signal there is. |
+| `poor_baseline_route` | The baseline rung itself routed expensively, so every relative number is measured against a bad price and understates the real cost. Negative `realizedImpactPct` values are the symptom — re-check with a smaller first rung. |
 | `baseline_only_clean` | Only the baseline rung came in clean, and its 0% is definitional. The true clean size may be smaller still. |
 
 <Note>
