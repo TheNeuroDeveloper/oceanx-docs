@@ -117,7 +117,12 @@
           "api/spot",
           "api/realtime",
           "api/data-reference",
-          "api/changelog"
+          "api/changelog",
+          {
+            "group": "API Reference",
+            "icon": "book-open",
+            "openapi": "https://www.oceanx.trade/api/v1/openapi.json"
+          }
         ]
       },
       {
