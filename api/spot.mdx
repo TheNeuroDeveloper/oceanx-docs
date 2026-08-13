@@ -32,6 +32,14 @@ transaction.
 All three need the **`md.read`** scope, which is on every key by default — existing
 keys work with no changes.
 
+<Note>
+  The pages linked above explain the behaviour and its traps. For the precise
+  field-level reference, generated from our OpenAPI spec and with a try-it panel, see
+  **API Reference → Spot**. The spec itself is public at
+  [`/api/v1/openapi.json`](https://www.oceanx.trade/api/v1/openapi.json) if you'd
+  rather generate a client.
+</Note>
+
 ## Four things to get right
 
 Each of these silently corrupts a number if you assume rather than check, and each
