@@ -1,0 +1,158 @@
+---
+title: "Token Chart"
+sidebarTitle: "Token Chart"
+description: "Read OHLCV candles for a Solana mint or an EVM token."
+---
+
+<Info>
+  **`GET /api/v1/market/chart/{token}`**
+</Info>
+
+Returns OHLCV bars for a token — the same series the OceanX charts draw, from
+the same sources. Solana mints are served from OceanX's own indexed trades, one
+volume-ranked pool per bucket. EVM tokens are served from market history with
+OceanX's indexed trades merged on top.
+
+Requires the **`md.read`** scope and uses the standard [120 requests per
+minute](/api/rate-limits) budget.
+
+<Tip>
+  You do not need to compute a time range. With no `from` or `to`, you get the
+  most recent `limit` buckets — `?resolution=1h&limit=24` is a day of hourly
+  candles.
+</Tip>
+
+## Query parameters
+
+| Parameter | Default | Notes |
+| --- | --- | --- |
+| `chain` | `solana` | `solana`, `ethereum`, `base`, `bnb`, `arbitrum`, `polygon`, `monad`, `hyperevm`, `robinhood`. |
+| `resolution` | `1m` | `1s`, `5s`, `15s`, `30s`, `1m`, `5m`, `15m`, `30m`, `1h`, `2h`, `4h`, `6h`, `8h`, `12h`, `1d`, `1w`, `1mn`. |
+| `from` | `to − limit × resolution` | Window start, unix **seconds**. |
+| `to` | now | Window end, unix **seconds**. |
+| `limit` | `500` | Maximum bars returned, counted from the end of the window. Max `1000`. |
+| `mode` | `price` | `price` for USD prices, `mc` for market cap on the same axis. |
+| `pool` | — | Restrict bars to one pool address. Solana only. |
+
+The `{token}` path segment is a base58 Solana mint, or a `0x` token address when
+`chain` names an EVM chain. Passing the wrong kind of address for the chain
+returns `invalid_token`.
+
+## Request
+
+```bash
+curl "https://www.oceanx.trade/api/v1/market/chart/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v?resolution=1h&limit=24" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+An EVM token needs the `chain` parameter:
+
+```bash
+curl "https://www.oceanx.trade/api/v1/market/chart/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2?chain=ethereum&resolution=1h&limit=24" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+```json
+{
+  "token": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "chain": "solana",
+  "resolution": "1h",
+  "resolutionSeconds": 3600,
+  "requestedResolutionSeconds": 3600,
+  "mode": "price",
+  "pool": null,
+  "from": 1786883820,
+  "to": 1786887420,
+  "bars": [
+    {
+      "ts": 1786885200000,
+      "o": 1.0,
+      "h": 1.006,
+      "l": 0.9951,
+      "c": 0.9993,
+      "v": 30.34,
+      "n": 259
+    }
+  ]
+}
+```
+
+Bars are ordered oldest first.
+
+## Response fields
+
+| Field | Notes |
+| --- | --- |
+| `token` | The token you requested. |
+| `chain` | The chain the bars came from. |
+| `resolution` | The resolution you requested. |
+| `resolutionSeconds` | Bucket width **actually served**, in seconds. |
+| `requestedResolutionSeconds` | Bucket width your `resolution` asked for. |
+| `mode` | `price` or `mc`. |
+| `pool` | The pool you pinned, or `null` when the server chose per bucket. |
+| `from` / `to` | The resolved window, unix **seconds**. |
+| `bars[]` | The candles. |
+
+Each bar:
+
+| Field | Notes |
+| --- | --- |
+| `ts` | Bucket **open** time, unix **milliseconds**. |
+| `o` `h` `l` `c` | Open, high, low, close. USD prices, or market cap under `mode=mc`. |
+| `v` | Volume traded in the bucket, in USD. |
+| `n` | Trades in the bucket. Solana only — see below. |
+
+<Warning>
+  **`ts` is in milliseconds, but `from` and `to` are in seconds.** Most OHLCV
+  feeds use seconds throughout. OceanX keeps bar timestamps in milliseconds so
+  they line up with the realtime stream; the window parameters stay in seconds.
+  Mixing the two is the most common integration mistake here.
+</Warning>
+
+## Things worth knowing
+
+**`n` is Solana-only.** EVM history comes from market data that carries no trade
+count, so `n` is reported as `0` there rather than guessed. It is a real count on
+Solana.
+
+**`mode=mc` needs a supply figure.** Market cap is price × circulating supply.
+For a token with no known supply — wrapped SOL, for instance — `mc` returns the
+same values as `price` rather than erroring.
+
+**EVM resolutions can be served finer than requested.** No market-data source
+publishes sub-minute EVM candles, so a sub-minute request on an EVM chain is
+served at the nearest **finer** supported bucket. Finer candles under a coarser
+label are still real trades; coarser ones would invent buckets that never
+existed. Compare `resolutionSeconds` against `requestedResolutionSeconds` to
+detect it. On Solana the two are always equal.
+
+**All prices are USD.** There is no SOL-denominated mode on this endpoint today.
+
+## Polling
+
+Responses are cached briefly per token and resolution, and a request with no `to`
+is snapped to that same cache window. Polling faster than the bar width returns
+the same bars and costs you nothing extra — but it also tells you nothing new, so
+poll at roughly your `resolution`.
+
+## Errors
+
+Standard [error envelope](/api/errors). Specific to this endpoint:
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `invalid_token` | 400 | Address doesn't match the chain — a base58 mint with `chain=base`, or a `0x` address without `chain`. |
+| `invalid_chain` | 400 | Unknown `chain`. |
+| `invalid_resolution` | 400 | Unknown `resolution`. The message lists the supported set. |
+| `invalid_range` | 400 | `from` is not earlier than `to`, or a timestamp isn't a positive integer. |
+| `invalid_limit` | 400 | `limit` is not a positive integer. |
+| `invalid_mode` | 400 | `mode` is not `price` or `mc`. |
+| `chart_unavailable` | 503 | The upstream chart source is unreachable. Retry. |
+| `chart_unavailable` | 504 | The window was too wide to aggregate in time. Ask for fewer bars or a coarser resolution. |
+
+<Note>
+  This endpoint is read-only market data. It does not submit, simulate, or imply
+  a trade.
+</Note>

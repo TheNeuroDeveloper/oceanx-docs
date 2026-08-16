@@ -4,6 +4,24 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-08-16 — Token charts
+
+New: [`GET /market/chart/{token}`](/api/endpoints/chart) returns OHLCV candles —
+the same series the OceanX charts draw. Resolutions from `1s` to `1mn`, in price
+or market-cap mode, for a Solana mint or an EVM token on Ethereum, Base, BNB,
+Arbitrum, Polygon, Monad, HyperEVM and Robinhood Chain.
+
+With no `from` or `to` you get the most recent `limit` buckets, so a day of
+hourly candles is just `?resolution=1h&limit=24`.
+
+Two things to read before integrating: bar timestamps are in **milliseconds**
+while the `from` / `to` window parameters are in **seconds**, and the trade count
+`n` is populated on Solana only. Both are covered on the
+[endpoint page](/api/endpoints/chart).
+
+Read-only, standard REST budget, needs only `md.read` — so **existing keys keep
+working**.
+
 ## 2026-08-13 — Callouts
 
 New: [Callouts](/api/endpoints/callouts) — public token calls posted by OceanX

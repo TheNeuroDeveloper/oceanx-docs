@@ -113,6 +113,7 @@
               "api/endpoints/spot-quote",
               "api/endpoints/spot-exit-check",
               "api/endpoints/spot-quote-stream",
+              "api/endpoints/chart",
               "api/endpoints/market-lighthouse",
               "api/endpoints/callouts"
             ]
