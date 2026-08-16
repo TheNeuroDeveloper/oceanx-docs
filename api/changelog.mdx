@@ -4,6 +4,15 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-08-16 — SOL-denominated chart bars
+
+[`GET /market/chart/{token}`](/api/endpoints/chart) gains `denom`. `denom=sol`
+prices each bar in SOL, dividing it by the SOL price of its own bucket. Volume
+stays in USD. Solana only — asking for it on an EVM chain returns
+`invalid_denom` rather than quietly ignoring it.
+
+Additive: the default is `usd` and existing calls are unchanged.
+
 ## 2026-08-16 — Token charts
 
 New: [`GET /market/chart/{token}`](/api/endpoints/chart) returns OHLCV candles —

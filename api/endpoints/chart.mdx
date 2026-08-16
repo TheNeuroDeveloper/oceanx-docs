@@ -31,7 +31,8 @@ minute](/api/rate-limits) budget.
 | `from` | `to − limit × resolution` | Window start, unix **seconds**. |
 | `to` | now | Window end, unix **seconds**. |
 | `limit` | `500` | Maximum bars returned, counted from the end of the window. Max `1000`. |
-| `mode` | `price` | `price` for USD prices, `mc` for market cap on the same axis. |
+| `mode` | `price` | `price` for prices, `mc` for market cap on the same axis. |
+| `denom` | `usd` | Denomination of the OHLC prices. `sol` prices each bar in SOL. Solana only. |
 | `pool` | — | Restrict bars to one pool address. Solana only. |
 
 The `{token}` path segment is a base58 Solana mint, or a `0x` token address when
@@ -62,6 +63,7 @@ curl "https://www.oceanx.trade/api/v1/market/chart/0xC02aaA39b223FE8D0A0e5C4F27e
   "resolutionSeconds": 3600,
   "requestedResolutionSeconds": 3600,
   "mode": "price",
+  "denom": "usd",
   "pool": null,
   "from": 1786883820,
   "to": 1786887420,
@@ -91,6 +93,7 @@ Bars are ordered oldest first.
 | `resolutionSeconds` | Bucket width **actually served**, in seconds. |
 | `requestedResolutionSeconds` | Bucket width your `resolution` asked for. |
 | `mode` | `price` or `mc`. |
+| `denom` | `usd` or `sol`. |
 | `pool` | The pool you pinned, or `null` when the server chose per bucket. |
 | `from` / `to` | The resolved window, unix **seconds**. |
 | `bars[]` | The candles. |
@@ -100,8 +103,8 @@ Each bar:
 | Field | Notes |
 | --- | --- |
 | `ts` | Bucket **open** time, unix **milliseconds**. |
-| `o` `h` `l` `c` | Open, high, low, close. USD prices, or market cap under `mode=mc`. |
-| `v` | Volume traded in the bucket, in USD. |
+| `o` `h` `l` `c` | Open, high, low, close. USD prices by default, SOL under `denom=sol`, or market cap under `mode=mc`. |
+| `v` | Volume traded in the bucket, **always in USD** — including under `denom=sol`. |
 | `n` | Trades in the bucket. Solana only — see below. |
 
 <Warning>
@@ -128,7 +131,10 @@ label are still real trades; coarser ones would invent buckets that never
 existed. Compare `resolutionSeconds` against `requestedResolutionSeconds` to
 detect it. On Solana the two are always equal.
 
-**All prices are USD.** There is no SOL-denominated mode on this endpoint today.
+**`denom=sol` prices bars in SOL, but not volume.** Each bar's OHLC is divided
+by the SOL price of its own bucket; `v` stays in USD. It is Solana-only —
+requesting it on an EVM chain returns `invalid_denom` rather than quietly
+ignoring the parameter, because EVM bars are USD by construction.
 
 ## Polling
 
@@ -149,6 +155,7 @@ Standard [error envelope](/api/errors). Specific to this endpoint:
 | `invalid_range` | 400 | `from` is not earlier than `to`, or a timestamp isn't a positive integer. |
 | `invalid_limit` | 400 | `limit` is not a positive integer. |
 | `invalid_mode` | 400 | `mode` is not `price` or `mc`. |
+| `invalid_denom` | 400 | `denom` is not `usd` or `sol`, or `sol` was requested on an EVM chain. |
 | `chart_unavailable` | 503 | The upstream chart source is unreachable. Retry. |
 | `chart_unavailable` | 504 | The window was too wide to aggregate in time. Ask for fewer bars or a coarser resolution. |
 
