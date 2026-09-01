@@ -4,10 +4,11 @@ sidebarTitle: "Overview"
 description: "Track Solana wallets and stream live trade, balance and PnL data with the OceanX Developer API."
 ---
 
-The OceanX Developer API lets you track Solana wallets, quote swaps, read live
-market context, and receive the same data and live feed the OceanX app itself
-uses — programmatically. **v1** covers **wallet tracking**, **spot quotes**,
-**token charts**, and the read-only **Market Lighthouse** activity frame.
+The OceanX Developer API lets you track Solana wallets, request Router routes,
+quote swaps, read live market context, and receive the same data and live feed
+the OceanX app itself uses — programmatically. **v1** covers **wallet tracking**,
+**Router routes**, **spot quotes**, **token charts**, and the read-only **Market
+Lighthouse** activity frame.
 
 <Note>
   The API is currently in **beta** and **free** to use while in beta.
@@ -44,6 +45,10 @@ All endpoints are under `/api/v1`. Responses are JSON. CORS is open (`Access-Con
 
   <Card title="Quote a swap" icon="calculator" href="/api/endpoints/spot-quote">
     Price, route and impact for a size, off our own router.
+  </Card>
+
+  <Card title="Route and read status" icon="route" href="/api/endpoints/router">
+    Request a read-only Raptor route or inspect a submitted Solana transaction.
   </Card>
 
   <Card title="Check an exit" icon="door-open" href="/api/endpoints/spot-exit-check">

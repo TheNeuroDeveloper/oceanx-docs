@@ -4,6 +4,16 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-09-01 — Read-only Router route and transaction status
+
+New: [`POST /route` and `GET /status/{id}`](/api/endpoints/router) expose a
+Solana Raptor route quote and the public status of an already-submitted Solana
+transaction. Both require only `md.read`, so existing keys keep working.
+
+This release is intentionally read-only: it does not expose transaction build,
+signing, submission, retry or wallet authority. `/route` uses the quote budget;
+`/status/{id}` uses the standard REST budget.
+
 ## 2026-08-16 — SOL-denominated chart bars
 
 [`GET /market/chart/{token}`](/api/endpoints/chart) gains `denom`. `denom=sol`

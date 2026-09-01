@@ -111,6 +111,7 @@
               "api/endpoints/trades",
               "api/endpoints/realtime-session",
               "api/endpoints/spot-quote",
+              "api/endpoints/router",
               "api/endpoints/spot-exit-check",
               "api/endpoints/spot-quote-stream",
               "api/endpoints/chart",

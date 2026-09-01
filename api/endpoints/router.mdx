@@ -1,0 +1,99 @@
+---
+title: "Router route and status"
+sidebarTitle: "Router route & status"
+description: "Request a read-only OceanX Router quote and look up a Solana transaction status."
+---
+
+OceanX exposes two read-only Router endpoints: one requests the route the engine
+would use, and one reads the status of an already-submitted Solana transaction.
+Neither endpoint builds, signs, or submits a transaction.
+
+Both require the **`md.read`** scope. `POST /route` costs **1** against the
+[quote budget](/api/rate-limits#quote-endpoints); `GET /status/{id}` uses the
+standard REST budget.
+
+## Request a route
+
+<Info>
+  **`POST /api/v1/route`**
+</Info>
+
+The MVP route endpoint is Solana-only and uses OceanX Raptor. It accepts JSON and
+returns the current quote object selected by the engine. The response has the
+same route, amount, impact, slot, venue and timing fields documented for
+[`GET /spot/quote`](/api/endpoints/spot-quote).
+
+### Body
+
+| Field | Default | Notes |
+| --- | --- | --- |
+| `inputMint` | — | **Required.** Base58 mint you're selling. |
+| `outputMint` | — | **Required.** Base58 mint you're buying. Must differ from `inputMint`. |
+| `amount` | — | Base units, positive integer string up to 32 digits. Required unless you send `uiAmount` with `inputDecimals`. |
+| `uiAmount` | — | Positive human-unit amount. Requires `inputDecimals`. |
+| `inputDecimals` | — | Integer from 0–18. Required with `uiAmount`. |
+| `slippageBps` | `50` | Integer from 1–1000. |
+| `dexes` | — | Restrict routing to these venue labels. Maximum 256 characters. |
+| `pools` | — | Restrict routing to these pool addresses. Maximum 256 characters. |
+| `maxHops` | — | Integer from 1–4. |
+| `onlyDirectRoutes` | `false` | Restrict the result to a single-hop route. |
+
+### Request
+
+```bash
+curl -X POST https://www.oceanx.trade/api/v1/route \
+  -H "Authorization: Bearer $OCEANX_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputMint": "So11111111111111111111111111111111111111112",
+    "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "amount": "1000000000",
+    "slippageBps": 50
+  }'
+```
+
+For the successful response fields, see the verified
+[`/spot/quote` response](/api/endpoints/spot-quote#response). A pair or size with
+no route returns `404 no_route`. Validation failures return
+`400 invalid_request`.
+
+<Warning>
+  A route is a read-only quote, not a transaction or a guarantee of execution.
+  There is no public build, sign, or execute endpoint. Never treat a quote id as
+  proof that a transaction was submitted.
+</Warning>
+
+## Read transaction status
+
+<Info>
+  **`GET /api/v1/status/{id}`**
+</Info>
+
+Looks up the public status of an already-submitted Solana transaction. `id` must
+be a valid 64-byte base58 Solana transaction signature.
+
+```bash
+curl "https://www.oceanx.trade/api/v1/status/$SOLANA_SIGNATURE" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+An invalid signature returns `400 invalid_signature`; a valid signature for
+which no public status is available returns `404 status_not_found`. The endpoint
+does not submit, retry, or alter the transaction.
+
+## Authentication error example
+
+Requests without a key return the standard API error envelope:
+
+```json
+{
+  "error": {
+    "code": "missing_api_key",
+    "message": "Provide your API key as `Authorization: Bearer <key>`. Create one in Settings → Developer API."
+  }
+}
+```
+
+Responses are JSON, `Cache-Control: no-store`, and CORS-enabled. Upstream
+availability failures use a `503 upstream_*` error rather than returning a
+stale or invented quote/status.
