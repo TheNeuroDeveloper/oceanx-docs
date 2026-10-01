@@ -10,6 +10,11 @@ Rate limits are applied **per API key** using a sliding window.
 | --- | --- |
 | Requests | **120 / minute** |
 
+[Market Overview](/api/endpoints/market-overview),
+[Market Movement](/api/endpoints/market-movement) and
+[Discovery Analytics](/api/endpoints/discovery-analytics) each cost one request
+from this standard REST budget. They share native cached producer observations.
+
 ## Quote endpoints
 
 The [spot quote endpoints](/api/spot) are metered in a **separate** budget, because

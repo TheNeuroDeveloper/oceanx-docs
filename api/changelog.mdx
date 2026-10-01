@@ -4,6 +4,16 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-01 — Native analytics observations
+
+New read-only beta endpoints: [Market Overview](/api/endpoints/market-overview),
+[Market Movement](/api/endpoints/market-movement) and
+[Discovery Analytics](/api/endpoints/discovery-analytics). Each requires `md.read`
+and the standard REST budget. Exact decimal strings, per-scalar coverage and
+producer-bound expiry keep missing or incomplete measurements explicit.
+Unsequenced REST observations never acquire an invented transport watermark.
+The existing Lighthouse response shape is unchanged.
+
 ## 2026-09-01 — Read-only Router route and transaction status
 
 New: [`POST /route` and `GET /status/{id}`](/api/endpoints/router) expose a

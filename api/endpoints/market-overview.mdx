@@ -1,0 +1,70 @@
+---
+title: "Market Overview"
+sidebarTitle: "Market Overview"
+description: "Native Lighthouse observations across chains."
+---
+
+<Info>
+  **`GET /api/v1/market/overview`**
+</Info>
+
+Lighthouse publishes 5m, 1h, 6h and 24h scalars. Volume counts one declared economic leg per route. Transactions and swap legs are separate. Protocol and launchpad breakdowns are not combined into invented aggregate identities.
+
+Requires **`md.read`** and the standard [120 requests/minute](/api/rate-limits)
+budget. This read-only beta endpoint reads a shared native VM observation;
+a request does not initiate a third-party market-data request.
+
+## Request
+
+No query parameters are accepted.
+
+```bash
+curl "https://www.oceanx.trade/api/v1/market/overview" \
+  -H "Authorization: Bearer $OCEANX_API_KEY"
+```
+
+## Response
+
+A successful observation has `version: "oceanx-data-v02.1"`, `stream: null`,
+`watermark: null`, `metrics` and `evidence`. It is an unsequenced REST
+observation. Source cursors are evidence and cannot be treated as contiguous
+transport sequences.
+
+| Field | Meaning |
+| --- | --- |
+| `metrics[].key` | Chain, optional token, scalar name and window. |
+| `metrics[].status` | `known`, `partial`, `stale` or `unavailable`, independently per scalar. |
+| `metrics[].value` | Exact decimal/integer string, or null. Missing is never zero. |
+| `metrics[].unit` | USD, count, decimal or percent, as specified by the scalar. |
+| `metrics[].reason` | Explanation for incomplete or unavailable data; null for complete data. |
+| `metrics[].provenance` | Source/method/version, source times, observed finality, coverage and expiry. |
+| `metrics[].provenance.staleAfter` | Producer-bound Unix milliseconds. Retrieval does not extend expiry. |
+| `evidence` | Method version, source watermarks, optional baseline version and volume convention. |
+
+Clients must expire data locally. Monetary JSON numbers and unsafe numeric
+counts are refused. No complete holder census or private account ledger is
+implied by an aggregate observation.
+
+### Measured error example
+
+Observed HTTP 401 from the production route on 2026-10-01 with no API key:
+
+```json
+{"error":{"code":"missing_api_key","message":"Provide your API key as `Authorization: Bearer <key>`. Create one in Settings → Developer API."}}
+```
+
+No successful production payload is presented as measured until its producer
+is qualified. Use the [live OpenAPI contract](https://www.oceanx.trade/api/v1/openapi.json)
+for the complete response schema.
+
+## Errors
+
+| Status | Condition |
+| --- | --- |
+| 400 | Query parameters were supplied. |
+| 401 / 403 | Missing/invalid key or missing `md.read` scope. |
+| 429 | Standard rate budget exhausted. |
+| 503 | Limiter/storage unavailable, or `analytics_unavailable` when the native producer is missing, malformed, future-dated, older than 45 seconds or exceeds the bounded response size. |
+
+Existing [Market Lighthouse](/api/endpoints/market-lighthouse) responses keep
+their previous shape.

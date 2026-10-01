@@ -116,6 +116,9 @@
               "api/endpoints/spot-quote-stream",
               "api/endpoints/chart",
               "api/endpoints/market-lighthouse",
+              "api/endpoints/market-overview",
+              "api/endpoints/market-movement",
+              "api/endpoints/discovery-analytics",
               "api/endpoints/callouts"
             ]
           },
