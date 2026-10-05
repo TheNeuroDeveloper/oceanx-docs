@@ -10,8 +10,8 @@ description: "Read OHLCV candles for a Solana mint or an EVM token."
 
 Returns OHLCV bars for a token — the same series the OceanX charts draw, from
 the same sources. Solana mints are served from OceanX's own indexed trades, one
-volume-ranked pool per bucket. EVM tokens are served from market history with
-OceanX's indexed trades merged on top.
+volume-ranked pool per bucket. EVM tokens use native execution candles, with
+vendor gap filling on supported minute/hour/day intervals.
 
 Requires the **`md.read`** scope and uses the standard [120 requests per
 minute](/api/rate-limits) budget.
@@ -124,12 +124,12 @@ Solana.
 For a token with no known supply — wrapped SOL, for instance — `mc` returns the
 same values as `price` rather than erroring.
 
-**EVM resolutions can be served finer than requested.** No market-data source
-publishes sub-minute EVM candles, so a sub-minute request on an EVM chain is
-served at the nearest **finer** supported bucket. Finer candles under a coarser
-label are still real trades; coarser ones would invent buckets that never
-existed. Compare `resolutionSeconds` against `requestedResolutionSeconds` to
-detect it. On Solana the two are always equal.
+**EVM candles use the exact selected interval.** This includes sparse seconds,
+30m, 2h, 6h, 8h, 12h, Monday-based UTC weeks and calendar months beginning on
+the first UTC. `resolutionSeconds` equals `requestedResolutionSeconds`; month
+width is nominally 30 days in these numeric fields. Empty execution intervals
+stay empty, and a failed native read remains retryable. Native reads are bounded
+to 90 days, so a wider request may return partial history.
 
 **`denom=sol` prices bars in SOL, but not volume.** Each bar's OHLC is divided
 by the SOL price of its own bucket; `v` stays in USD. It is Solana-only —
