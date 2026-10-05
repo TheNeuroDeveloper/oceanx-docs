@@ -131,6 +131,10 @@ width is nominally 30 days in these numeric fields. Empty execution intervals
 stay empty, and a failed native read remains retryable. Native reads are bounded
 to 90 days, so a wider request may return partial history.
 
+The EVM reader follows numeric native `Retry-After` delays on its single warming
+retry, within the existing request deadline. Persistent failures remain
+retryable; they do not become successful empty history.
+
 **`denom=sol` prices bars in SOL, but not volume.** Each bar's OHLC is divided
 by the SOL price of its own bucket; `v` stays in USD. It is Solana-only —
 requesting it on an EVM chain returns `invalid_denom` rather than quietly

@@ -6,6 +6,9 @@ description: "Release notes for the OceanX Developer API."
 
 ## 2026-10-05 — Exact EVM chart intervals
 
+Native EVM warming retries now follow the reader's numeric `Retry-After` delay
+within the existing request deadline, avoiding premature repeat reads.
+
 [Token charts](/api/endpoints/chart) now serve the selected native EVM interval
 for 30m, 2h, 6h, 8h, 12h, week and month requests. These previously returned
 finer candles (for example, 1h candles for a 2h request). Both resolution-width
