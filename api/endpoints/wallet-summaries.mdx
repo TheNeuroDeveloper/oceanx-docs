@@ -1,0 +1,188 @@
+---
+title: "Wallet summaries"
+sidebarTitle: "Wallet summaries"
+description: "Batch Solana wallet identities and observed PnL summaries."
+---
+
+<Info>
+  **`POST /api/v1/wallets/summary`**
+</Info>
+
+Read wallet identities and PnL summaries for up to 100 Solana wallets in one request. This endpoint requires a bearer API key with `md.read`. Each request consumes one request from the standard REST budget. It reads only data OceanX already holds: it does not start a history replay, add wallets to a watch list, renew capture or schedule RPC backfill.
+
+## Request
+
+Send a JSON body of the form `{"wallets": [...]}` with 1–100 distinct Solana wallet addresses. The body may be at most 8 KiB. No query parameters are accepted.
+
+```bash
+curl --fail-with-body \
+  -H "Authorization: Bearer $OCEANX_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"wallets":["NALUnJA2AJUYa6xJL1HsorEeFgxxDsfUgYBCX8Pp2zD","7BYYxNDxTEvKPewRYiPHiaBd6HzxVFZoue37N4DtLSwD"]}' \
+  "https://www.oceanx.trade/api/v1/wallets/summary"
+```
+
+## Response
+
+Example captured from production on 2026-10-15 from an 11-wallet batch, trimmed to two rows. The top-level `summary.index` repeats `historyCoverage.solana.index` and is abbreviated.
+
+```json
+{
+  "data": {
+    "complete": false,
+    "wallets": [
+      {
+        "identity": null,
+        "status": "partial",
+        "summary": {
+          "asOf": 1792010602456,
+          "complete": false,
+          "coverage": "observed_trades_since 2026-10-14T20:35:58.642+00:00",
+          "historyCoverage": {
+            "solana": {
+              "chain": "solana",
+              "complete": false,
+              "costBasis": {
+                "complete": false,
+                "known": 46,
+                "status": "partial",
+                "total": 69
+              },
+              "exclusions": [
+                "transfers",
+                "fees",
+                "pre_window_inventory",
+                "unobserved_assets"
+              ],
+              "fees": {
+                "complete": false,
+                "known": 0,
+                "status": "unknown",
+                "total": 909
+              },
+              "fromMs": 1792010158642,
+              "history": {
+                "complete": false,
+                "known": 0,
+                "status": "unknown",
+                "total": 69
+              },
+              "index": {
+                "backfillDaysDone": 0,
+                "backfillDaysTarget": 30,
+                "coveredFromMs": 1792010158642,
+                "coveredUntilMs": 1792010602456,
+                "error": "Observed index is incomplete",
+                "eventCap": 909,
+                "eventCount": 909,
+                "exclusions": [
+                  "transfers",
+                  "fees",
+                  "pre_window_inventory"
+                ],
+                "historyTransport": "standard-rpc",
+                "liveSinceMs": 1791508305249,
+                "scannedTransactions": 3000,
+                "source": "wallet-trade-index:dragonfly(scout.trades.v2 live + solana-rpc on-demand)",
+                "status": "partial",
+                "truncated": true,
+                "unfetchedTransactions": 490,
+                "unpricedTransactions": 0,
+                "unprovableTransactions": 629
+              },
+              "observedEvents": 909,
+              "observedFromMs": 1792010158642,
+              "observedThroughMs": 1792010602456,
+              "orphanedEvents": null,
+              "scope": "observed_swaps",
+              "source": "wallet-trade-index:observed-average-cost",
+              "status": "partial",
+              "throughMs": 1792010602456,
+              "transfersIncluded": false,
+              "undatedEvents": 0,
+              "valuation": {
+                "complete": false,
+                "known": 46,
+                "status": "partial",
+                "total": 69
+              }
+            }
+          },
+          "index": "…same object as historyCoverage.solana.index",
+          "pnlMode": "unknown-basis-null",
+          "source": "wallet-trade-index:observed-average-cost",
+          "token": null,
+          "wallet": {
+            "realized": null,
+            "total": null,
+            "unrealized": null
+          }
+        },
+        "wallet": "NALUnJA2AJUYa6xJL1HsorEeFgxxDsfUgYBCX8Pp2zD"
+      },
+      {
+        "identity": null,
+        "status": "unavailable",
+        "summary": null,
+        "wallet": "7BYYxNDxTEvKPewRYiPHiaBd6HzxVFZoue37N4DtLSwD"
+      }
+    ]
+  },
+  "source": "local"
+}
+```
+
+Rows are in the same order as the request. Each row has:
+
+| Field | Meaning |
+| --- | --- |
+| `wallet` | The requested address. |
+| `status` | `partial` when `identity` or `summary` is present, otherwise `unavailable`. |
+| `identity` | Wallet identity, or `null`. See [Identity](#identity). |
+| `summary` | PnL summary, or `null`. See [PnL summary](#pnl-summary). |
+
+A summary never claims to be complete: `complete` is always `false`. An unknown value is `null`, never zero.
+
+### Identity
+
+Identity doesn't depend on any particular token. It can include:
+
+- **Wallet profile labels and reviewed display metadata.** A wallet profile label does not imply a token-specific role such as dev, sniper or insider.
+- **Platform tags** such as `platform:axiom`, `platform:bloom` or `platform:photon`. Each comes with `platformEvidence`: `method`, `evidenceTx`, `confidence` in basis points and `observedAtMs`. A tag records an observed fee-account association, not wallet ownership.
+- **Reviewed classifications:** `hacker`, `spam_dusting` or `exchange`. These require current reviewed evidence with confidence of at least 9500, a method and a transaction. An exchange classification also requires a name. The absence of a label is not a safety verdict.
+- **`sns.domain`**: a verified, directly owned top-level `.sol` primary name. Tokenized names, subdomains and names with unsupported characters stay unknown. This endpoint reads SNS from cache only.
+
+### PnL summary
+
+A summary prefers OceanX's native fee-inclusive trade ledger. When a wallet has no valid ledger projection, the summary falls back to the observed-swap index, with `source` set to `wallet-trade-index:observed-average-cost`. This is observed PnL over the covered window, not lifetime accounting.
+
+| Field | Meaning |
+| --- | --- |
+| `wallet.realized`, `wallet.unrealized`, `wallet.total` | USD amounts, or `null` when the acquisition basis or a current mark is unknown. |
+| `pnlMode` | `unknown-basis-null` means positions with an unknown basis contribute `null` rather than an estimate. |
+| `historyCoverage.solana` | The observed window (`fromMs` to `throughMs`) and the known/total counts for `costBasis`, `valuation` and `fees`. `exclusions` lists what the window omits: fees, transfers and inventory held before the window. |
+| `index` | Index limits for the window: `eventCap`, `eventCount` and `truncated`. |
+
+The observed-swap fallback is bounded for each batch:
+
+- 10,000 events and 4 MiB in total, split into equal shares per wallet. An 11-wallet batch gets 909 events per wallet.
+- At most four concurrent index reads.
+- One shared price lookup covering at most 64 open tokens.
+- A 1.5-second deadline for the PnL part of the request.
+
+A wallet that hits its share is marked `"truncated": true`.
+
+## Errors
+
+Errors use `{error:{code,message}}`. Rate-admitted responses include the usual `X-RateLimit-*` headers.
+
+| HTTP | Meaning |
+| --- | --- |
+| `400` | Invalid JSON, a query parameter, or `wallets` that is not 1–100 distinct Solana addresses. |
+| `401` | Missing, invalid or revoked API key. |
+| `403` | Disabled key or missing `md.read`. |
+| `413` | Body larger than 8 KiB. |
+| `429` | Rate limit exceeded; honor `Retry-After`. |
+| `503` | Wallet data unavailable, timed out or over the response budget. |
+
+A wallet OceanX has not captured returns `200` with `summary: null`. Besides the standard REST budget, wallet batches share a native admission limit with liquidity reads: two concurrent requests and 60 starts per minute per verified caller.

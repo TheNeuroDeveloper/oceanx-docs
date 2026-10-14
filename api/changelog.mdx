@@ -4,6 +4,16 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-15 — Wallet summaries
+
+New read-only endpoint: [Wallet summaries](/api/endpoints/wallet-summaries)
+(`POST /wallets/summary`) returns identities and PnL summaries for up to 100
+Solana wallets per request. It requires `md.read` and the standard REST budget.
+Identity covers wallet profile labels, evidence-backed platform tags, reviewed
+classifications and cached `.sol` names. PnL prefers the native fee-inclusive
+ledger and falls back to bounded observed-swap PnL. That fallback reports its
+window and exclusions, and an unknown cost basis stays `null`.
+
 ## 2026-10-14 — Token summary and risk facts
 
 New read-only endpoints: [Token summary](/api/endpoints/token-summary)

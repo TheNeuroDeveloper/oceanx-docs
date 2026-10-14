@@ -110,6 +110,7 @@
               "api/endpoints/snapshot",
               "api/endpoints/token-summary",
               "api/endpoints/token-risk",
+              "api/endpoints/wallet-summaries",
               "api/endpoints/trades",
               "api/endpoints/realtime-session",
               "api/endpoints/spot-quote",

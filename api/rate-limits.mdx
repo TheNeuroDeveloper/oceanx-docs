@@ -15,6 +15,10 @@ Rate limits are applied **per API key** using a sliding window.
 [Discovery Analytics](/api/endpoints/discovery-analytics) each cost one request
 from this standard REST budget. They share native cached producer observations.
 
+[Wallet summaries](/api/endpoints/wallet-summaries) costs one request per batch of
+up to 100 wallets. Wallet batches also share a native admission limit with liquidity
+reads: two concurrent requests and 60 starts per minute per verified caller.
+
 ## Quote endpoints
 
 The [spot quote endpoints](/api/spot) are metered in a **separate** budget, because
