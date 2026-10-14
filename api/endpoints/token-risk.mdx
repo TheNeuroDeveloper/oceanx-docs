@@ -1,0 +1,113 @@
+---
+title: "Token risk facts"
+sidebarTitle: "Token risk"
+description: "Read independently fresh native risk facts without treating missing data as safety."
+---
+
+<Info>
+  **`GET /api/v1/tokens/{chain}/{address}/risk`**
+</Info>
+
+Requires an API key with `md.read` and consumes the existing REST request allowance. Only `chain=solana` is currently supported. The address must be a valid Solana mint. No query parameters are accepted; unknown or repeated parameters return `400`. URLs are limited to 8 KiB. Responses use `Cache-Control: no-store`.
+
+## Request
+
+```bash
+curl --fail-with-body \
+  -H "Authorization: Bearer $OCEANX_API_KEY" \
+  "https://www.oceanx.trade/api/v1/tokens/solana/$TOKEN_ADDRESS/risk"
+```
+
+## Response
+
+Example captured from production on 2026-10-14 (wrapped SOL; account identifiers redacted):
+
+```json
+{
+  "data": {
+    "chain": "solana",
+    "address": "So11111111111111111111111111111111111111112",
+    "modelVersion": "public-risk-v1",
+    "facts": {
+      "mint_authority_active": false,
+      "freeze_authority_active": false,
+      "concentrated_top10": null,
+      "developer_holding": null,
+      "developer_sold_all": null,
+      "sniper_holding": null,
+      "insider_holding": null,
+      "bundled_holding": null,
+      "suspected_wash_volume": null,
+      "lp_not_burned": null
+    },
+    "tags": [
+      {
+        "code": "mint_authority_active",
+        "state": "absent",
+        "severity": "warning",
+        "value": false,
+        "unit": "boolean",
+        "status": "known",
+        "observedAtMs": 1791985589286,
+        "staleAfterMs": 86400000,
+        "source": "query-rs:token-snapshot",
+        "methodVersion": "public-token-v1",
+        "coverage": {
+          "reason": "source_observation",
+          "complete": true
+        }
+      },
+      {
+        "code": "freeze_authority_active",
+        "state": "absent",
+        "severity": "warning",
+        "value": false,
+        "unit": "boolean",
+        "status": "known",
+        "observedAtMs": 1791985589286,
+        "staleAfterMs": 86400000,
+        "source": "query-rs:token-snapshot",
+        "methodVersion": "public-token-v1",
+        "coverage": {
+          "reason": "source_observation",
+          "complete": true
+        }
+      },
+      {
+        "…": "10 tags in total"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "requestId_3",
+    "methodVersion": "public-token-v1",
+    "chain": "solana"
+  }
+}
+```
+
+
+The response is `{data, meta}`. `data` contains `chain`, `address`, `modelVersion`, `facts` and `tags`. `meta` contains the request identifier and projection version.
+
+Each tag contains:
+
+| Field | Meaning |
+| --- | --- |
+| `code` | Stable signal name. |
+| `state` | `present`, `absent` or `unknown`. |
+| `severity` | `warning` or `info`; describes a signal, not a guarantee of safety. |
+| `value`, `unit` | The qualified fact and its unit; unknown facts have `value=null`. |
+| `status` | `known`, `partial`, `stale` or `unavailable`. |
+| `source`, `methodVersion` | Source reader and public projection version. |
+| `observedAtMs`, `staleAfterMs` | Original observation time and freshness duration in milliseconds, or `null`. |
+| `coverage` | `reason` and `complete`; no completeness is inferred from a successful HTTP response. |
+
+The current projection qualifies `mint_authority_active` and `freeze_authority_active` only from a confirmed mint-account proof with source time, positive slot and a recognized token program. Authority observations older than one day become unknown in this projection. Source-cache retrieval never refreshes that clock.
+
+The candidate codes `concentrated_top10`, `developer_holding`, `developer_sold_all`, `sniper_holding`, `insider_holding`, `bundled_holding`, `suspected_wash_volume` and `lp_not_burned` currently remain unknown. Their public thresholds and exact source facts are not inferred from floating-point display fields or a missing audit. This endpoint does not return a safety score or grant execution permission.
+
+Risk source reads use the default cache-only token snapshot, independently of the summary cache, and are shared for at most thirty seconds per process; expiry is evaluated on every response. The Scout risk reader is not used because it creates holder-enrichment leases. No page-open selector, vendor enrichment or LP probe is requested. A token snapshot with no cached audit returns an all-unknown risk projection. A failed or malformed snapshot dependency returns `503 data_unavailable`.
+
+## Errors
+
+Errors use `{error:{code,message},requestId}`: `400` for invalid input or unsupported chain, `401` for absent/invalid keys, `403` for disabled keys or missing scope, `429` for exhausted REST quota, and `503` for source/limiter unavailability. Existing key verification failures may return `500`. Honor `Retry-After` when present.

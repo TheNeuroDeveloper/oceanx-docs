@@ -1,0 +1,142 @@
+---
+title: "Token summary"
+sidebarTitle: "Token summary"
+description: "Read cached Solana token identity and qualified market facts."
+---
+
+<Info>
+  **`GET /api/v1/tokens/{chain}/{address}`**
+</Info>
+
+Read token identity and market facts from OceanX's existing native snapshot reader. This endpoint requires a bearer API key with `md.read`. Every request consumes the existing REST key allowance, including a cache hit. Responses use `Cache-Control: no-store`.
+
+## Request
+
+| Parameter | Location | Required | Meaning |
+| --- | --- | --- | --- |
+| `chain` | Path | Yes | `solana`. Other chains return `400 unsupported_chain`. |
+| `address` | Path | Yes | A valid Solana mint address. Case is preserved. |
+| `include` | Query | No | Set to `risk` to include the independently cached risk projection. |
+
+Unknown or repeated query parameters are rejected. URLs must be at most 8 KiB. This read does not start vendor enrichment, page-open history work or LP probing.
+
+```bash
+curl --fail-with-body \
+  -H "Authorization: Bearer $OCEANX_API_KEY" \
+  "https://www.oceanx.trade/api/v1/tokens/solana/$TOKEN_ADDRESS?include=risk"
+```
+
+## Response
+
+Example captured from production on 2026-10-14 (wrapped SOL; account identifiers redacted):
+
+```json
+{
+  "data": {
+    "chain": "solana",
+    "address": "So11111111111111111111111111111111111111112",
+    "name": "Wrapped SOL",
+    "symbol": "SOL",
+    "decimals": 9,
+    "supply": null,
+    "supplyType": null,
+    "firstObservedAtMs": null,
+    "createdAtMs": null,
+    "imageUrl": null,
+    "website": null,
+    "launchpad": null,
+    "dex": null,
+    "poolAddress": null,
+    "stage": null,
+    "bondingProgressPct": null,
+    "priceUsd": null,
+    "priceNative": null,
+    "marketCapUsd": null,
+    "fdvUsd": null,
+    "liquidityUsd": null,
+    "holders": 3699196,
+    "imageStatus": "unavailable",
+    "socialLinks": {
+      "twitter": null,
+      "telegram": null
+    },
+    "windows": {
+      "1h": {
+        "buys": null,
+        "sells": null,
+        "economicVolumeUsd": null,
+        "observation": {
+          "status": "unavailable",
+          "observedAtMs": null,
+          "staleAfterMs": null,
+          "source": "query-rs:token-snapshot",
+          "methodVersion": "public-token-v1",
+          "coverage": {
+            "reason": "not_available_as_exact_public_fact",
+            "complete": false
+          }
+        }
+      },
+      "…": "5m, 6h and 24h have the same shape"
+    },
+    "fieldMeta": {
+      "name": {
+        "status": "stale",
+        "observedAtMs": 1791991477724,
+        "staleAfterMs": 30000,
+        "source": "query-rs:token-snapshot",
+        "methodVersion": "public-token-v1",
+        "coverage": {
+          "complete": false,
+          "reason": "source_retained_observation"
+        }
+      },
+      "…": "one entry per field"
+    }
+  },
+  "meta": {
+    "requestId": "requestId_1",
+    "methodVersion": "public-token-v1",
+    "chain": "solana"
+  }
+}
+```
+
+
+The response is `{data, meta}`. `meta` includes `requestId`, `chain` and `methodVersion`. `data.address` is the requested canonical address.
+
+| Fields | Meaning |
+| --- | --- |
+| `name`, `symbol`, `decimals` | Source identity, or `null`. |
+| `supply`, `supplyType` | Exact supply and its basis when available; otherwise `null`. |
+| `firstObservedAtMs`, `createdAtMs` | Epoch milliseconds, or `null`. Creation requires a chain mint-creation source; first observation is not creation. |
+| `imageUrl`, `imageStatus` | An accepted HTTPS image URL or `null`; status is `resolved` or `unavailable`. This is URL resolution, not a fetch or content-safety guarantee. |
+| `website`, `socialLinks.twitter`, `socialLinks.telegram` | HTTPS links or `null`. Treat all metadata text and links as untrusted. |
+| `launchpad`, `dex`, `poolAddress`, `stage` | Source identity/membership, or `null`. |
+| `bondingProgressPct` | Exact decimal string or `null`. |
+| `priceUsd`, `priceNative`, `marketCapUsd`, `fdvUsd`, `liquidityUsd` | Exact source decimal strings or `null`. |
+| `holders` | A safe integer count or `null`. |
+| `windows` | `5m`, `1h`, `6h`, `24h` objects, each with `buys`, `sells`, `economicVolumeUsd` and `observation`. |
+| `fieldMeta` | Per-field source, method version, original observation time, freshness duration, coverage reason and status. |
+| `risk` | Included only with `include=risk`; same projection as the risk endpoint. |
+
+Observation status is `known`, `partial`, `stale` or `unavailable`. `staleAfterMs` is a duration from `observedAtMs`; either may be `null` when the source does not establish freshness. Fetching a cached object does not renew its source clock.
+
+Snapshot display observations preserve the producer's original field clocks and retained `stale` state. Their freshness threshold is thirty seconds. Fresh display observations remain `partial` when complete population or economic coverage is not certified.
+
+The current snapshot's floating-point market scalars are not converted into claimed exact decimals. Those fields remain `null` until the source provides exact strings. Window buy/sell counts and economic volume also remain unavailable until their public semantics are qualified. Execution-leg counts and volume are not relabeled as deduplicated transactions or economic volume. A known zero differs from an unavailable value: unavailable fields are `null` and carry a coverage reason.
+
+The server shares summary source reads for up to two seconds and risk reads for up to thirty seconds within each process. Authorization and rate limiting happen before those caches.
+
+## Errors
+
+Errors use `{error:{code,message},requestId}`. Responses include `X-Request-Id`; rate-admitted responses retain the usual `X-RateLimit-*` headers.
+
+| HTTP | Meaning |
+| --- | --- |
+| `400` | Malformed input, unknown/repeated query parameter, invalid mint or unsupported chain. |
+| `401` | Missing, invalid or revoked API key. |
+| `403` | Disabled key or missing `md.read`. |
+| `429` | REST rate limit exceeded; honor `Retry-After`. |
+| `500` | Existing key verification service could not verify the key. |
+| `503` | Rate-limit storage or token source unavailable, overloaded, timed out or outside the response-byte budget. |

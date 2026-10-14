@@ -4,6 +4,16 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-14 — Token summary and risk facts
+
+New read-only endpoints: [Token summary](/api/endpoints/token-summary)
+(`GET /tokens/{chain}/{address}`) and [Token risk](/api/endpoints/token-risk)
+(`GET /tokens/{chain}/{address}/risk`), Solana only. Both require `md.read` and
+the standard REST budget. Every field carries its own source, observation time
+and coverage, so missing or unqualified facts are `null` with a reason rather
+than zero. Risk tags report `present`, `absent` or `unknown`; there is no safety
+score and no execution permission.
+
 ## 2026-10-05 — Exact EVM chart intervals
 
 Native EVM warming retries now follow the reader's numeric `Retry-After` delay
