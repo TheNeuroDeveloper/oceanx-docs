@@ -1,0 +1,130 @@
+---
+title: "Trading API availability"
+sidebarTitle: "Trading API"
+description: "Availability and request contracts for spot buy/sell, limit, TWAP, snipe and copy-trade intake. Execution remains unavailable."
+---
+
+<Warning>
+  Trading execution is unavailable. These routes do not create orders, follows,
+  signing permits, signatures or transactions. The scopes below are reserved
+  and cannot be selected in Developer API settings. Browser trading sessions
+  do not authorize API-key execution. This page accompanies the closed-intake
+  release; it does not announce live trading.
+</Warning>
+
+Existing [spot quotes](/api/spot) remain read-only. Keep API keys on a trusted
+server. Cookies and caller-supplied user IDs never authorize these routes.
+
+## Availability
+
+<Info>`GET /api/v1/spot/capabilities` — requires `md.read`.</Info>
+
+The response reports `executionAvailable: false`, `blockedOn: signing-contracts`,
+`inputChains`, `operations` and a `note`. Each operation names its path, method,
+reserved scope and kinds, with `available: false`. Input coverage describes
+validation only, not chain execution admission. It covers Solana and the 23 EVM
+chains listed by the deployed OpenAPI specification; copy inputs retain the
+five-chain coverage below.
+
+## Buy and sell
+
+<Info>`POST /api/v1/spot/trades` — reserved `spot.trade` scope; unavailable.</Info>
+
+The JSON request has these required fields. Query parameters and additional
+fields are forbidden. Addresses must match the explicit chain.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `chain` | string | Solana or one of the EVM input chains in the deployed OpenAPI schema. |
+| `wallet` | string | Owned account wallet; asserted by the caller and independently checked after future signature verification. |
+| `token` | string | Traded token address. |
+| `quoteToken` | string | Quote token address, distinct from `token`. |
+| `side` | `buy` or `sell` | Trade direction. |
+| `amount` | decimal integer string | Positive input atoms: quote token on buy, traded token on sell. Maximum u64 on Solana, u256 on EVM. |
+| `slippageBps` | integer | 1–1000 basis points. |
+| `clientOrderId` | string | 1–64 ASCII letters, digits, underscores or hyphens. Currently validation only; no durable idempotency claim. |
+
+Amounts cannot use floating point numbers, fractions or scientific notation.
+EVM addresses must be nonzero, 20-byte hex addresses; Solana addresses must be
+valid base58 public keys. Signer, recipient, fee and user identity overrides are
+not accepted.
+
+## Limit, TWAP and snipe
+
+<Info>`POST /api/v1/spot/orders` — reserved `spot.orders` scope; unavailable.</Info>
+
+Requests include the buy/sell fields above and one order variant:
+
+| `orderType` | Additional required fields | Constraints |
+| --- | --- | --- |
+| `limit` | `limitPriceUsd`, `expiresAt` | Positive exact decimal price string; future ISO timestamp with time zone. |
+| `twap` | `slices`, `durationSeconds`, `jitterSeconds` | 2–100 slices; integer duration from 2 seconds to 89 days; jitter 0–86400 seconds. Duration must be at least the slice count, jitter times slices must be less than duration, and each slice must receive at least one input atom. |
+| `snipe` | `trigger`, `maxPriceUsd`, `expiresAt` | Buy only. Trigger is `first_liquidity` or `migration`; positive exact decimal maximum price; future timestamp. |
+
+For a migration snipe, `migrationFromPool` is required and must be a valid
+address on the selected chain. It is forbidden for `first_liquidity`.
+Exact decimal prices allow up to 20 integer digits and 18 fractional digits.
+These input schemas do not imply that automation adapters or permits are live.
+
+## Copy trade
+
+<Info>`POST /api/v1/copy-trading/follows` — reserved `copy.trade` scope; unavailable.</Info>
+
+Existing `GET /copy-trading/follows` remains a separate `copy.read` operation;
+read access confers no creation authority.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `chain` | string | `solana`, `base`, `bnb`, `ethereum` or `robinhood`. |
+| `wallet` | string | Owned account wallet on that chain. |
+| `targetWallet` | string | Distinct wallet to follow on that chain. |
+| `mode` | `buys` or `all` | Requested follow mode. |
+| `sizingMode` | `fixed` or `pct` | Fixed USD size or percentage sizing. |
+| `fixedUsd` | positive decimal string | Required only for `fixed`; cannot exceed the per-trade cap. |
+| `pctBps` | integer | Required only for `pct`; 1–10000 basis points. |
+| `maxPerTradeUsd` | positive decimal string | Cannot exceed the daily cap. |
+| `dailyCapUsd` | positive decimal string | Daily spending cap. |
+| `slippageBps` | integer | 1–300 basis points. |
+| `clientOrderId` | string | Same syntax and current limitation as spot trades. |
+
+USD fields use exact decimal strings with up to 20 integer digits and 18
+fractional digits. Unknown fields are refused; no follow is saved or activated.
+
+## Admission and responses
+
+All routes use the standard [per-key REST budget](/api/rate-limits), separate
+from the quote budget. Mutations require `application/json`, at most 8 KiB,
+with a three-second body read deadline. Authentication, product-access checks,
+key revocation, REST admission and IP restrictions precede the body read.
+
+The bounded exact wire bytes go to request-signature admission **before JSON
+parsing, input validation or wallet lookup**. The independent signature gate
+currently refuses every request, including fabricated signature headers. Thus
+an unsigned caller cannot distinguish owned, foreign or unavailable wallet
+bindings. No signature header format or enrollment procedure is released.
+
+| HTTP | Meaning |
+| --- | --- |
+| `200` | Capabilities only; execution remains false. |
+| `400` | Query parameters, unreadable/oversize body; after future signature verification, malformed JSON/UTF-8 or invalid input. |
+| `401` | Missing, invalid, revoked or disabled API key. Cookies confer no authority. |
+| `403` | Missing reserved scope, product-access or IP refusal; after future verification, wallet ownership refusal. |
+| `415` | Mutation content type is not `application/json`. |
+| `429` | Per-key REST admission exceeded. |
+| `500` | API-key verification dependency failed. |
+| `503` | `signer_unavailable`, `trading_unavailable` or `rate_limit_unavailable`; no execution is admitted. |
+
+No mutation advertises a success response. Responses use `Cache-Control:
+no-store`, standard CORS and the [error envelope](/api/errors). This response was
+captured from the exported source-candidate POST in a local, unfunded test;
+it is not evidence of a deployed mutation route:
+
+```json
+{"error":{"code":"missing_api_key","message":"Provide your API key as `Authorization: Bearer <key>`. Create one in Settings → Developer API."}}
+```
+
+Execution requires a reviewed release of per-key signed requests binding a
+timestamp, nonce, method/path and exact body hash with an atomic bounded replay
+window. Separate owner-bound wallet authority, service ownership checks, exact
+permits/caps, one-use journals, reconciliation and revocation are also required.
+Replacing a refusal or supplying a bearer token does not activate trading.

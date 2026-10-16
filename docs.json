@@ -126,6 +126,7 @@
             ]
           },
           "api/spot",
+          "api/full-trading",
           "api/realtime",
           "api/data-reference",
           "api/changelog",

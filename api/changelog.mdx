@@ -4,6 +4,15 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-16 — Closed trading intake
+
+[Trading API availability](/api/full-trading) describes spot buy/sell,
+limit/TWAP/snipe and copy-follow intake. Execution remains unavailable, trading
+scopes are reserved, and mutations have no success response. Exact request bytes
+are gated before JSON parsing or wallet lookup, pending reviewed request-signing,
+wallet execution and automation contracts. Existing quote and copy-read
+operations retain their separate scopes. This is not a live trading release.
+
 ## 2026-10-15 — Wallet summaries
 
 New read-only endpoint: [Wallet summaries](/api/endpoints/wallet-summaries)
