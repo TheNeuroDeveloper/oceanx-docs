@@ -90,3 +90,5 @@ Field notes:
 - The public share page for any callout is `https://www.oceanx.trade/c/{id}`.
 - Creating callouts is app-only for now (token page → megaphone); the API
   surface is read-only.
+- Both lists return active, unexpired callouts. Removed callouts are excluded,
+  including retained removal markers, in both `recent` and `top` order.
