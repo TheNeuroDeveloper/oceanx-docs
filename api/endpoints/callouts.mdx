@@ -103,6 +103,12 @@ numbers. An unresolved price remains `null`. A non-finite metric, or a nonzero
 metric that would become zero when converted to a JSON number, uses the same
 empty-page fallback. Existing finite values and stored amounts are unchanged.
 
+Both lists share a two-second read budget across schema access, database pool
+and lock waits, row conversion and cursor encoding. An exhausted budget cancels
+the read and returns HTTP 200 with `{ "callouts": [], "nextCursor": null }`.
+Later requests can recover normally; this fallback does not prove the feed is
+empty.
+
 - `priceUsdAtCreate` is the server-resolved token price when the callout was
   posted — the baseline for "% since callout". `null` when no price resolved.
 - `attributedVolumeUsd` / `earnedUsd` / `pointsAwarded` update as attributed

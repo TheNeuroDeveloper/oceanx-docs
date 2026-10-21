@@ -4,6 +4,14 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-21 — Callout list read budget
+
+[Callout lists](/api/endpoints/callouts) now share a two-second read budget
+across schema access, database waits, row conversion and cursor encoding.
+Expired reads return the existing HTTP 200 empty-page fallback with a null
+cursor. Later requests can recover normally; authentication, stored rows and
+pagination ordering are unchanged.
+
 ## 2026-10-21 — Callout number representation
 
 [Callout lists](/api/endpoints/callouts) return vote, click, trader and point
