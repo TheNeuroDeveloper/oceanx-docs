@@ -1,7 +1,7 @@
 ---
 title: "Data Reference"
 sidebarTitle: "Data Reference"
-description: "Field-level reference for wallet and trade objects returned by the OceanX Developer API."
+description: "Wallet and trade fields and token ranking windows in the OceanX Developer API."
 ---
 
 ## Wallet
@@ -31,6 +31,23 @@ description: "Field-level reference for wallet and trade objects returned by the
 | `pool` / `dex` | string? | Pool address / DEX program. |
 | `market_cap_usd` | number? | Token market cap. |
 | `symbol` / `name` / `image` | string? | Token metadata. |
+
+## Trending token windows
+
+<Info>
+`GET /api/v1/tokens/trending` requires `md.read`.
+</Info>
+
+This endpoint ranks cached native token observations by observed swap volume.
+Select the ranking window with the optional `window` query parameter:
+
+| Parameter | Type | Default | Accepted values |
+| --- | --- | --- | --- |
+| `window` | string | `24h` | `1m`, `5m`, `30m`, `1h`, `6h`, `24h` |
+
+Send `window=30m` for a 30-minute ranking window on Solana or a supported EVM
+chain. Responses preserve observation times and coverage; an unavailable source
+window can return HTTP 503.
 
 ## Status values
 

@@ -4,6 +4,13 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-21 — 30-minute token ranking window
+
+`GET /api/v1/tokens/trending` now accepts `window=30m` alongside `1m`, `5m`,
+`1h`, `6h` and `24h`. The default remains `24h`. See
+[Trending token windows](/api/data-reference#trending-token-windows) for the
+parameter contract and source coverage behavior.
+
 ## 2026-10-16 — Closed trading intake
 
 [Trading API availability](/api/full-trading) describes spot buy/sell,
