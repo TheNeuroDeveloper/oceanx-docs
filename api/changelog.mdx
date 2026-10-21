@@ -4,6 +4,14 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-21 — Exact Callout counters
+
+[Callout lists](/api/endpoints/callouts) return vote, click, trader and point
+counters as exact nonnegative JSON integers through `9007199254740991`. A
+selected row with an out-of-range counter uses the existing HTTP 200 empty-page
+fallback instead of returning rounded counts or a partial page. Authentication,
+query limits and pagination ordering are unchanged.
+
 ## 2026-10-21 — 30-minute token ranking window
 
 `GET /api/v1/tokens/trending` now accepts `window=30m` alongside `1m`, `5m`,

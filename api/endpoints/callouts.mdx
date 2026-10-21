@@ -83,6 +83,21 @@ Both endpoints return a `CalloutPage`:
 
 Field notes:
 
+| Counter | Meaning |
+| --- | --- |
+| `agree_count` | Agree votes on the callout. |
+| `disagree_count` | Disagree votes on the callout. |
+| `clickCount` | Callout clicks. |
+| `traderCount` | Distinct attributed traders. |
+| `pointsAwarded` | Points awarded from attributed trades. |
+
+These counters are exact nonnegative JSON integers from `0` through
+`9007199254740991`. If a selected callout has a counter outside that range,
+both endpoints keep their best-effort response: HTTP 200 with
+`{ "callouts": [], "nextCursor": null }`. They do not return rounded counts or
+a partial page. This fallback applies to selected rows, not the next-page
+lookahead.
+
 - `priceUsdAtCreate` is the server-resolved token price when the callout was
   posted — the baseline for "% since callout". `null` when no price resolved.
 - `attributedVolumeUsd` / `earnedUsd` / `pointsAwarded` update as attributed
