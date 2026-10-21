@@ -98,6 +98,11 @@ both endpoints keep their best-effort response: HTTP 200 with
 a partial page. This fallback applies to selected rows, not the next-page
 lookahead.
 
+`priceUsdAtCreate`, `attributedVolumeUsd` and `earnedUsd` are finite JSON
+numbers. An unresolved price remains `null`. A non-finite metric, or a nonzero
+metric that would become zero when converted to a JSON number, uses the same
+empty-page fallback. Existing finite values and stored amounts are unchanged.
+
 - `priceUsdAtCreate` is the server-resolved token price when the callout was
   posted — the baseline for "% since callout". `null` when no price resolved.
 - `attributedVolumeUsd` / `earnedUsd` / `pointsAwarded` update as attributed
