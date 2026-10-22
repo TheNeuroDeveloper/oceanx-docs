@@ -103,6 +103,11 @@ numbers. An unresolved price remains `null`. A non-finite metric, or a nonzero
 metric that would become zero when converted to a JSON number, uses the same
 empty-page fallback. Existing finite values and stored amounts are unchanged.
 
+The stored expiry must be later than creation. A selected callout with an equal
+or earlier expiry uses the same HTTP 200 empty-page fallback. The comparison
+uses PostgreSQL timestamp precision; a positive sub-millisecond lifetime is
+valid even when `createdAt` and `expiresAt` round to equal JSON timestamps.
+
 Both lists share a two-second read budget across schema access, database pool
 and lock waits, row conversion and cursor encoding. An exhausted budget cancels
 the read and returns HTTP 200 with `{ "callouts": [], "nextCursor": null }`.

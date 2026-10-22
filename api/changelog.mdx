@@ -4,6 +4,13 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-21 — Callout lifetime validation
+
+[Callout lists](/api/endpoints/callouts) use the existing HTTP 200 empty-page
+fallback when a selected callout's stored expiry is equal to or earlier than
+creation. Exact PostgreSQL timestamps determine the lifetime; positive
+sub-millisecond intervals retain their existing JSON timestamp representation.
+
 ## 2026-10-21 — Callout list read budget
 
 [Callout lists](/api/endpoints/callouts) now share a two-second read budget
