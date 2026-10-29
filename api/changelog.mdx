@@ -4,6 +4,12 @@ sidebarTitle: "Changelog"
 description: "Release notes for the OceanX Developer API."
 ---
 
+## 2026-10-29 — Longer daily, weekly and monthly charts
+
+[Token charts](/api/endpoints/chart) now read up to 400 days for 1d, 1w and 1mn
+intervals on Solana and EVM (previously 90 days). Intraday intervals keep the
+90-day bound, and a wider request may still return partial history.
+
 ## 2026-10-16 — Closed trading intake
 
 [Trading API availability](/api/full-trading) describes spot buy/sell,

@@ -129,7 +129,8 @@ same values as `price` rather than erroring.
 the first UTC. `resolutionSeconds` equals `requestedResolutionSeconds`; month
 width is nominally 30 days in these numeric fields. Empty execution intervals
 stay empty, and a failed native read remains retryable. Native reads are bounded
-to 90 days, so a wider request may return partial history.
+to 90 days for intraday intervals and 400 days for 1d, 1w and 1mn, so a wider
+request may return partial history.
 
 The EVM reader follows numeric native `Retry-After` delays on its single warming
 retry, within the existing request deadline. Persistent failures remain
